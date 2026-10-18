@@ -60,7 +60,8 @@ def _teacher_courses(names):
         info = student_from_email(email)
         row = {"sid": info["sid"] if info else email.split("@")[0], "name": s.get("name") or "", "email": email, "cls": s.get("cls") or ""}
         for cid in ids & set(s.get("sel") or []):
-            by_course[cid].append(row)
+            if all(r["email"] != email for r in by_course[cid]):  # 同一個信箱只列一次
+                by_course[cid].append(row)
     for c in courses:
         c["students"] = sorted(by_course[c["id"]], key=lambda r: r["sid"])
         c["slot_text"] = ai.slot_text(c["slots"])

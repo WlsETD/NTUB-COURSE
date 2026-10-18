@@ -471,7 +471,8 @@
     if(!r.ok)throw {code:data.error||"error"};
     return data}
   // 選課有變動就存到 Firestore（停 0.6 秒後送出，連續點很多次只會存一次）
-  var lastSaved=JSON.stringify(selPayload()),saveT=null,saving=false;
+  // 跟「資料庫裡真正存的」比，不是跟載入時的畫面比：第一次登入、或學號改了本系而重新帶入的必修，載入後就會立刻存檔
+  var lastSaved=BOOT.saved?JSON.stringify({major:BOOT.saved.major,grade:BOOT.saved.grade,cls:BOOT.saved.cls,sel:BOOT.saved.sel||[],auto:BOOT.saved.auto||[]}):"",saveT=null,saving=false;
   function selPayload(){return {major:homeDept(),grade:homeGrade(),cls:state.cls,sel:state.sel,auto:state.auto}}
   function queueSave(){if(JSON.stringify(selPayload())===lastSaved)return;clearTimeout(saveT);saveT=setTimeout(saveNow,600)}
   async function saveNow(){
