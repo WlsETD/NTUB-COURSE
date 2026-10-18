@@ -225,3 +225,29 @@ class DevLoginTests(Base):
         self.assertEqual(self.dev("me@gmail.com").status_code, 403)
         self.assertEqual(self.dev("sckuai@ntub.edu.tw").status_code, 200)
         self.assertEqual(self.client.get("/teacher/").status_code, 200)
+
+
+class TeacherExportTests(Base):
+    def setUp(self):
+        super().setUp()
+        from courses.teachers import courses_taught
+        all_courses = store.get_store().list_courses()
+        self.cid = courses_taught(["蒯思齊"], all_courses)[0]["id"]
+        self.other = courses_taught(["林俊杰"], all_courses)[0]["id"]
+        self.login({**SCHOOL_CLAIMS, "email": "11446001@ntub.edu.tw"})
+        self.post("/api/selection/", {"major": "406", "grade": 2, "cls": "資管二年甲班", "sel": [self.cid]})
+
+    def test_student_cannot_export(self):
+        self.assertEqual(self.client.get("/teacher/export.csv").status_code, 302)
+
+    def test_export(self):
+        self.client.post("/auth/logout/")
+        self.login(TeacherTests.TEACHER)
+        r = self.client.get("/teacher/export.csv")
+        text = r.content.decode("utf-8")
+        self.assertTrue(text.startswith("\ufeff課號,課名"))  # BOM：Excel 開中文不亂碼
+        self.assertIn("11446001,測試學生,資管二年甲班,11446001@ntub.edu.tw", text)
+        self.assertIn("attachment", r["Content-Disposition"])
+        one = self.client.get("/teacher/export.csv", {"course": self.cid})
+        self.assertIn("11446001", one.content.decode("utf-8"))
+        self.assertEqual(self.client.get("/teacher/export.csv", {"course": self.other}).status_code, 404)  # 別的老師的課

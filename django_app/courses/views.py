@@ -1,8 +1,11 @@
+import csv
+import io
 import json
+from urllib.parse import quote
 
 from django.conf import settings
 from django.core.cache import cache
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
@@ -46,13 +49,8 @@ def app_page(request):
     return render(request, "courses/app.html", {"courses": course_rows_for(sel), "boot": boot})
 
 
-@school_login_required
-def teacher_page(request):
-    """老師端：自己開的課，以及每門課透過本系統選課的學生。"""
-    me = _me(request)
-    names = teacher_names(me["email"])
-    if not names:
-        return redirect("courses:app")
+def _teacher_courses(names):
+    """老師開的課，每門課附上透過本系統選課的學生（依學號排序）。"""
     store = get_store()
     courses = courses_taught(names, store.list_courses())
     ids = {c["id"] for c in courses}
@@ -66,11 +64,47 @@ def teacher_page(request):
     for c in courses:
         c["students"] = sorted(by_course[c["id"]], key=lambda r: r["sid"])
         c["slot_text"] = ai.slot_text(c["slots"])
+    return courses
+
+
+@school_login_required
+def teacher_page(request):
+    """老師端：自己開的課，以及每門課透過本系統選課的學生。"""
+    names = teacher_names(_me(request)["email"])
+    if not names:
+        return redirect("courses:app")
+    courses = _teacher_courses(names)
     return render(request, "courses/teacher.html", {
         "teacher": "、".join(names),
         "courses": courses,
         "total": sum(len(c["students"]) for c in courses),
     })
+
+
+@require_GET
+@school_login_required
+def teacher_export(request):
+    """匯出選課學生名單 CSV；?course=課程 id 只匯出那一門，沒給就匯出全部。
+    加上 UTF-8 BOM，Excel 直接打開中文才不會變亂碼。"""
+    names = teacher_names(_me(request)["email"])
+    if not names:
+        return redirect("courses:app")
+    courses = _teacher_courses(names)
+    only = request.GET.get("course")
+    if only:
+        courses = [c for c in courses if c["id"] == only]
+        if not courses:
+            raise Http404  # 不是這位老師的課
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["課號", "課名", "開課班級", "上課時間", "學號", "姓名", "學生班級", "信箱"])
+    for c in courses:
+        for s in c["students"]:
+            w.writerow([c["code"], c["name"], c["cls"], c["slot_text"], s["sid"], s["name"], s["cls"], s["email"]])
+    filename = f"選課名單_{courses[0]['code']}_{courses[0]['name']}.csv" if only else "選課名單_全部課程.csv"
+    resp = HttpResponse("﻿" + buf.getvalue(), content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = f"attachment; filename=\"students.csv\"; filename*=UTF-8''{quote(filename)}"
+    return resp
 
 
 @require_GET

@@ -56,6 +56,9 @@ html:lang(zh-Hant) body{word-break:keep-all;overflow-wrap:anywhere}
 .tch-count{text-align:right;flex:none}
 .tch-count b{display:block;font-family:var(--font-mono);font-size:26px;font-weight:500;line-height:1.1;color:var(--accent)}
 .tch-count small{color:var(--muted);font-size:12px;white-space:nowrap}
+.tch-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.tch-acts .btn{text-decoration:none;display:inline-flex;align-items:center;min-height:36px}
+.tch-csv{display:inline-block;margin-top:6px;font-size:12.5px;font-weight:500;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:3px 10px;text-decoration:none;white-space:nowrap}
 .tch-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px}
 .tch-list li{display:grid;grid-template-columns:96px 88px minmax(0,1fr) minmax(0,1.4fr);gap:10px;align-items:center;background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:13px}
 .tch-sid{font-family:var(--font-mono);font-variant-numeric:tabular-nums}

@@ -23,7 +23,10 @@
       <h1><span class="bw">NTUB</span> <span class="bw">COURSE</span></h1>
       <p class="sub"><span class="sub-seg">教師端</span> · <span class="sub-seg">115 學年度第 1 學期</span> · <span class="sub-seg">開課 {{ courses|length }} 門、選課 {{ total }} 人次</span></p>
     </div>
-    <button type="button" class="btn ghost" id="logout">登出</button>
+    <div class="tch-acts">
+      {% if total %}<a class="btn" href="{% url 'courses:teacher_export' %}" download>匯出全部名單 CSV</a>{% endif %}
+      <button type="button" class="btn ghost" id="logout">登出</button>
+    </div>
   </header>
 
   {% for c in courses %}
@@ -33,7 +36,8 @@
         <h2>{{ c.name }} <span class="tch-type">{{ c.type }}</span></h2>
         <p class="tch-meta"><span class="nw">{{ c.cls }}</span> · <span class="nw">{{ c.slot_text }}</span> · <span class="nw">{{ c.room }}</span> · <span class="nw">{{ c.credits }} 學分</span> · <span class="nw">課號 {{ c.code }}</span></p>
       </div>
-      <div class="tch-count"><b>{{ c.students|length }}</b><small>人選課 · 名額 {{ c.cap }}</small></div>
+      <div class="tch-count"><b>{{ c.students|length }}</b><small>人選課 · 名額 {{ c.cap }}</small>
+        {% if c.students %}<a class="tch-csv" href="{% url 'courses:teacher_export' %}?course={{ c.id|urlencode }}" download>匯出 CSV</a>{% endif %}</div>
     </div>
     {% if c.students %}
     <ol class="tch-list">
