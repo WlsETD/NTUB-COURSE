@@ -15,6 +15,7 @@ from django.views.decorators.http import require_POST
 from firebase_admin import auth as fb_auth
 
 from courses.firebase import get_app
+from courses.teachers import teacher_names
 
 
 def login_page(request):
@@ -62,6 +63,7 @@ def dev_login(request):
     """本機測試用：不經過 Google，直接用指定的學校信箱登入（可以在瀏覽器 console 呼叫）。
 
     只有 DJANGO_DEBUG=1 才能用；正式環境（Cloud Run 設 DJANGO_DEBUG=0）一律 404。
+    連真的 Firestore 時只能用老師帳號（老師端只讀不寫）；學生帳號只限 STORE=memory，避免假選課寫進真實資料。
     """
     if not settings.DEBUG:
         raise Http404
@@ -72,6 +74,8 @@ def dev_login(request):
     email = str(body.get("email") or "").strip().lower()
     if not email.endswith("@" + settings.SCHOOL_DOMAIN):
         return JsonResponse({"error": "not_school_account", "email": email}, status=403)
+    if settings.STORE != "memory" and not teacher_names(email):
+        return JsonResponse({"error": "student_needs_memory_store"}, status=403)
     request.session.flush()
     request.session.update({"uid": "dev:" + email, "email": email, "name": str(body.get("name") or "")[:40]})
     return JsonResponse({"ok": True, "email": email})

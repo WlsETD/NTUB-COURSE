@@ -251,3 +251,19 @@ class TeacherExportTests(Base):
         one = self.client.get("/teacher/export.csv", {"course": self.cid})
         self.assertIn("11446001", one.content.decode("utf-8"))
         self.assertEqual(self.client.get("/teacher/export.csv", {"course": self.other}).status_code, 404)  # 別的老師的課
+
+
+class NoFakeDataTests(Base):
+    @override_settings(DEBUG=True, STORE="firestore")
+    def test_dev_login_student_blocked_on_real_store(self):
+        r = self.post("/dev/login/", {"email": "11446001@ntub.edu.tw"})
+        self.assertEqual(r.json()["error"], "student_needs_memory_store")
+
+    @override_settings(DEBUG=True, STORE="firestore")
+    def test_dev_login_teacher_allowed_on_real_store(self):
+        self.assertEqual(self.post("/dev/login/", {"email": "sckuai@ntub.edu.tw"}).status_code, 200)
+
+    def test_teacher_cannot_save_selection(self):
+        self.login(TeacherTests.TEACHER)
+        r = self.post("/api/selection/", {"major": "406", "grade": 2, "sel": []})
+        self.assertEqual(r.status_code, 403)

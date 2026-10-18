@@ -119,6 +119,8 @@ def api_me(request):
 def api_selection(request):
     """儲存選課（每次加選、退選後由前端自動呼叫）。"""
     me = _me(request)
+    if teacher_names(me["email"]):  # 老師帳號不選課，也不能寫入選課資料
+        return JsonResponse({"error": "teacher_account"}, status=403)
     valid = {c["id"] for c in get_store().list_courses()}
     data = clean_selection(_json_body(request), valid)
     get_store().save_selection(me["uid"], me["email"], data, me["name"])
