@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>NTUB COURSE</title>
+<link rel="icon" href="{% static 'courses/icons/favicon.ico' %}" sizes="any">
+<link rel="icon" href="{% static 'courses/icons/icon-small.svg' %}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{% static 'courses/icons/apple-touch-icon.png' %}">
+<link rel="manifest" href="{% static 'courses/icons/site.webmanifest' %}">
+<meta name="theme-color" content="#0e6b75">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="preload" href="{% static 'courses/fonts/cubic11.woff2' %}" as="font" type="font/woff2" crossorigin>
@@ -90,6 +95,15 @@
 
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog class="dlg" id="ttDlg" aria-labelledby="ttDlgT">
+  <form method="dialog">
+    <p class="dlg-q" data-i18n="ttQ">要退選這門課嗎？</p>
+    <h3 id="ttDlgT"></h3>
+    <p class="dlg-meta" id="ttDlgM"></p>
+    <p class="dlg-warn" id="ttDlgW" hidden></p>
+    <div class="dlg-act"><button class="btn ghost" value="keep" data-i18n="ttKeep">保留</button><button class="btn drop" value="drop" data-i18n="bDrop">退選</button></div>
+  </form>
+</dialog>
 <nav class="mnav" data-i18n-aria="navAria" aria-label="主要導覽">
   <button type="button" data-mv="list" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span data-i18n="navList">課程</span></button>
   <button type="button" data-mv="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 4v17M13.5 9v12"/></svg><span data-i18n="navTable">課表</span><b class="badge" id="navBadge"></b></button>

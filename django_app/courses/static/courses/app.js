@@ -61,7 +61,7 @@
       themeSystem:"跟隨系統",themeLight:"淺色",themeDark:"深色",themeAria:"切換配色",langBtn:"EN",langAria:"Switch to English",langToast:"已切換為中文",
       done:"已修過此課程",minGrade:"{0}以上才能選",drawing:"抽籤進行中",noSeat:"抽籤後已無空缺名額",clash:"與「{0}」衝堂",pre:"尚未修畢先修課 {0}",overMax:"加選後超過學分上限 {0}",
       cantAdd:"無法加選：{0}",addedAfter:"已加選「{0}」，名額 {1}/{2}",regOver:"已登記「{0}」，{1}/{2} 超額，截止後抽籤",regOk:"已登記「{0}」，{1}/{2}，截止後直接錄取",
-      dropReq:"已取消必修「{0}」，畢業前仍需補修",dropped:"已退選「{0}」",lowCredit:"提醒：目前學分低於下限 {0}",
+      dropReq:"已取消必修「{0}」，畢業前仍需補修",dropped:"已退選「{0}」",grpSel:"已選課程",ttQ:"要退選這門課嗎？",ttKeep:"保留",ttReqWarn:"這是本班必修，退選後畢業前仍需補修。",ttBlkAria:"{0}，點選可退選",lowCredit:"提醒：目前學分低於下限 {0}",
       gradTitle:"畢業學分進度",total:"合計 {0} / {1}",gap:"差 {0}",reached:"已達成",had:"已修",now:"本學期",
       crTitle:"本學期學分",crMax:"/ 上限 {0}",selCount:"已選 {0} 門",stNeed:"尚差 {0} 學分達下限",stMax:"已達學分上限",stLeft:"可再選 {0} 學分",
       phase1:"階段一 · 登記中，可超額登記，截止後抽籤",phase3:"階段三 · 加退選，剩餘名額先搶先贏",
@@ -79,7 +79,7 @@
       themeSystem:"System",themeLight:"Light",themeDark:"Dark",themeAria:"Change appearance",langBtn:"中文",langAria:"切換為中文",langToast:"Switched to English",
       done:"Already completed",minGrade:"Open to {0} and above",drawing:"Lottery in progress",noSeat:"No seats left after the lottery",clash:"Conflicts with {0}",pre:"Prerequisite not met: {0}",overMax:"Would exceed the {0}-credit limit",
       cantAdd:"Can't add: {0}",addedAfter:"Added {0} ({1}/{2})",regOver:"Registered for {0}. {1}/{2} is over capacity, so a lottery runs after the deadline",regOk:"Registered for {0} ({1}/{2}). You'll be admitted after the deadline",
-      dropReq:"Removed required course {0}. You still need it to graduate",dropped:"Dropped {0}",lowCredit:"Heads up: you're below the {0}-credit minimum",
+      dropReq:"Removed required course {0}. You still need it to graduate",dropped:"Dropped {0}",grpSel:"Selected",ttQ:"Drop this course?",ttKeep:"Keep",ttReqWarn:"This is a required course for your class. You'll still need to take it before you graduate.",ttBlkAria:"{0}. Select to drop",lowCredit:"Heads up: you're below the {0}-credit minimum",
       gradTitle:"Graduation progress",total:"Total {0} / {1}",gap:"{0} to go",reached:"Done",had:"Completed",now:"This term",
       crTitle:"Credits this term",crMax:"/ max {0}",selCount:"{0} courses",stNeed:"{0} more credits to reach the minimum",stMax:"At the credit limit",stLeft:"{0} credits available",
       phase1:"Phase 1 · Registration open. Over-capacity courses go to a lottery",phase3:"Phase 3 · Add/drop. Remaining seats are first come, first served",
@@ -298,15 +298,16 @@
         '<span class="c-ico k'+colIdx(c)+'">'+icon(c)+'</span><div class="c-main"><h3>'+esc(nm(c))+'<span class="'+(c.cat==="req"?"req":"lvl")+'">'+typ(c.type)+'</span>'+(sel&&state.auto.indexOf(c.id)>=0?'<span class="auto">'+t("tAuto")+'</span>':'')+(sel?cntTag(c):'')+(!sel&&state.auto.indexOf(c.id)>=0?'<span class="auto off">'+t("tAutoOff")+'</span>':'')+'</h3>'+
         '<div class="meta"><span class="cls-tag">'+esc(clsShort(c))+'</span> '+esc(tc(c))+' · <span class="nw">'+slotText(c)+'</span> · <span class="nw">'+esc(rm(c))+'</span> · <span class="nw">'+t("cr",c.credits)+'</span></div>'+note+'</div>'+
         seat+btn+'</article>'}
-    // group: my class, other classes of my year, lower years of my department, then general education, PE and military training
-    var G=[["grpCls",function(c){return c.src==="dept"&&c.cls===state.cls},gname(state.grade)+" "+state.cls.replace(/^[^一二三四]+/,"")],
+    // 已選的課固定在最上面一組；其餘依序：my class, other classes of my year, lower years of my department, then general education, PE and military training
+    var G=[["grpSel",function(c){return state.sel.indexOf(c.id)>=0}],["grpCls",function(c){return c.src==="dept"&&c.cls===state.cls},gname(state.grade)+" "+state.cls.replace(/^[^一二三四]+/,"")],
       ["grpSame",function(c){return c.src==="dept"&&c.dept===state.major&&c.grade===state.grade&&c.cls!==state.cls}],
       ["grpLowDept",function(c){return c.src==="dept"&&c.dept===state.major&&c.grade<state.grade}],
       ["grpAi",function(c){return c.src==="dept"&&c.dept!==state.major},state.aiFilter.filter(function(d){return d!==state.major}).map(deptName).join(t("sep"))],
       ["grpGe",function(c){return c.src==="ge"}],["grpPe",function(c){return c.src==="pe"}],["grpMil",function(c){return c.src==="mil"}]];
     var i=0,h="";
     function head(txt,n){return '<div class="grp"><span>'+txt+'</span><span class="grp-n">'+n+'</span></div>'}
-    G.forEach(function(g){var l=arr.filter(g[1]);if(!l.length)return;h+=head(t(g[0],g[2]),l.length);h+=l.map(function(c){return card(c,i++)}).join("")});
+    var used={};
+    G.forEach(function(g){var l=arr.filter(function(c){return !used[c.id]&&g[1](c)});l.forEach(function(c){used[c.id]=1});if(!l.length)return;h+=head(t(g[0],g[2]),l.length);h+=l.map(function(c){return card(c,i++)}).join("")});
     L.innerHTML=h}
 
   function renderTT(){
@@ -321,7 +322,7 @@
     state.sel.forEach(function(id){
       var c=byId[id];
       var pop=(state.first||state.popAll||id===state.justAdded)?" pop":"";
-      c.slots.forEach(function(s){h+='<div class="blk k'+colIdx(c)+pop+'" data-cid="'+id+'" style="grid-column:'+(s[0]+1)+';grid-row:'+(s[1]+1)+' / '+(s[2]+2)+'"><b>'+icon(c,"ico-s")+esc(nm(c))+'</b><span>'+esc(rm(c))+'</span></div>'})});
+      c.slots.forEach(function(s){h+='<button type="button" class="blk k'+colIdx(c)+pop+'" data-cid="'+id+'" data-blk="'+id+'" aria-label="'+esc(t("ttBlkAria",nm(c)))+'" style="grid-column:'+(s[0]+1)+';grid-row:'+(s[1]+1)+' / '+(s[2]+2)+'"><b>'+icon(c,"ico-s")+esc(nm(c))+'</b><span>'+esc(rm(c))+'</span></button>'})});
     if(state.hover){
       var hc=byId[state.hover];if(isDone(hc))hc=null}
     if(state.hover&&hc){var clash=!!clashWith(hc)&&state.sel.indexOf(hc.id)<0;
@@ -486,6 +487,7 @@
     else if(t.id==="resetLot"){resetLottery()}
     else if(t.id==="noClash"){state.noClash=!state.noClash;t.setAttribute("aria-pressed",state.noClash);renderList(true);toast(tr(state.noClash?"ncOn":"ncOff"))}
     else if(t.dataset.src){state.src=t.dataset.src;state.slot=null;renderChips();renderList(true);renderTT()}
+    else if(t.dataset.blk){openDropDlg(t.dataset.blk)}
     else if(t.dataset.slot){pickSlot(t.dataset.slot.split(",").map(Number))}
     else if(t.id==="slotClear"){state.slot=null;renderChips();renderList(true);renderTT()}
     else if(t.dataset.cls){if(t.dataset.cls!==state.cls&&!state.drawing){snapshot();state.cls=t.dataset.cls;resetFor("dSwitch")}}
@@ -494,6 +496,17 @@
     else if(t.id==="qAll"){state.src="all";renderChips();renderList(true)}
     else if(t.id==="aiClear"){state.aiFilter=[];renderChips();renderList(true);renderAI()}
     else if(t.id==="doneTg"){state.showDone=!state.showDone;renderList(true)}});
+  // 點課表上的課：跳出對話框確認要不要退選（預設焦點在「保留」）
+  function openDropDlg(id){
+    var c=byId[id],dlg=$("ttDlg");if(!c||state.drawing||!dlg.showModal)return;
+    $("ttDlgT").textContent=nm(c);
+    $("ttDlgM").innerHTML=esc(c.teacher)+' · <span class="nw">'+slotText(c)+'</span> · <span class="nw">'+esc(rm(c))+'</span> · <span class="nw">'+t("cr",c.credits)+'</span>';
+    $("ttDlgW").textContent=tr("ttReqWarn");$("ttDlgW").hidden=state.auto.indexOf(id)<0;
+    dlg.dataset.cid=id;dlg.returnValue="";dlg.showModal()}
+  $("ttDlg").addEventListener("close",function(){var id=this.dataset.cid;if(this.returnValue==="drop"&&state.sel.indexOf(id)>=0)drop(id)});
+  // 點背景關閉；點對話框本身的留白（target 也是 dialog）不算
+  $("ttDlg").addEventListener("click",function(e){if(e.target!==this)return;var r=this.getBoundingClientRect();
+    if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.close("keep")});
   // 點課表的空格：課程清單只留那個時段有上課的課（不分類別），再點一次同一格取消
   var MOBILE=window.matchMedia&&matchMedia("(max-width:720px), (max-width:1366px) and (pointer:coarse)");
   function pickSlot(sl){
