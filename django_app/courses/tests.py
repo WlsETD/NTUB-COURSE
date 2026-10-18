@@ -89,7 +89,6 @@ class SelectionTests(Base):
 
     def test_registered_counts(self):
         st = store.get_store()
-        base = st.courses["s1"]["enr"]
         self.login()
         self.post("/api/selection/", {"major": "406", "grade": 2, "sel": ["s1", "s2"]})
         self.assertEqual(st.courses["s1"]["registered"], 1)
@@ -100,7 +99,7 @@ class SelectionTests(Base):
         self.assertEqual(st.courses["s1"]["registered"], 2)
         # u2 看到的人數不含自己（前端會自己 +1），u2 退選後人數減 1
         rows = {r[0]: r for r in self.client.get("/app/").context["courses"]}
-        self.assertEqual(rows["s1"][12], base + 1)
+        self.assertEqual(rows["s1"][12], 1)  # 只算實際登記的學生，不含學校舊快照
         self.post("/api/selection/", {"major": "406", "grade": 2, "sel": []})
         self.assertEqual(st.courses["s1"]["registered"], 1)
         self.assertEqual(st.courses["s2"]["registered"], 1)

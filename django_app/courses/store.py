@@ -196,11 +196,12 @@ def reset_store_for_tests():
 
 
 def course_rows_for(student_sel=()):
-    """給前端的 RAW：已選人數 = 原始快照 + 本系統登記人數（扣掉這位學生自己，前端會再加回來）。"""
+    """給前端的 RAW：已選人數 = 本系統實際登記人數（扣掉這位學生自己，前端會再加回來）。
+    學校原始資料裡的已選人數是舊快照，不是這個系統的學生，所以不算進來。"""
     mine = set(student_sel)
     rows = []
     for c in get_store().list_courses():
-        enr = int(c.get("enr", 0)) + int(c.get("registered", 0)) - (1 if c["id"] in mine else 0)
+        enr = int(c.get("registered", 0)) - (1 if c["id"] in mine else 0)
         row = [c[f] for f in FIELDS]
         row[FIELDS.index("enr")] = max(enr, 0)
         rows.append(row)

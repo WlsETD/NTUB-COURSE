@@ -191,7 +191,7 @@ def api_ai_suggest(request):
         for x in (ids if isinstance(ids, list) else [])[:limit]:
             c = courses.get(str(x))
             if c and c not in out:
-                out.append({**c, "enr": int(c.get("enr", 0)) + int(c.get("registered", 0))})
+                out.append({**c, "enr": int(c.get("registered", 0))})
         return out
 
     selected = pick(body.get("sel"), 60)
