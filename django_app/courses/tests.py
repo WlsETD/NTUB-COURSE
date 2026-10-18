@@ -148,3 +148,32 @@ class AITests(Base):
 
     def test_slot_text(self):
         self.assertEqual(ai.slot_text([[3, 2, 4], [5, 1, 1]]), "週三 2–4節、週五 第1節")
+
+
+class StudentIdTests(SimpleTestCase):
+    def test_day_four_year(self):
+        from courses.student_id import parse_student_id
+        s = parse_student_id("11446001")
+        self.assertEqual((s["dept"], s["grade"], s["programName"]), ("406", 2, "四技"))
+        self.assertEqual(parse_student_id("115406012")["dept"], "406")  # 科系前多一個 0
+        self.assertEqual(parse_student_id("1154A001")["dept"], "40A")
+        self.assertEqual(parse_student_id("11541001")["grade"], 1)
+        self.assertEqual(parse_student_id("10941001")["grade"], 4)  # 延畢算大四
+
+    def test_unsupported(self):
+        from courses.student_id import parse_student_id
+        self.assertIsNone(parse_student_id("s1"))
+        self.assertIsNone(parse_student_id("N1134001"))  # 進修部
+        self.assertIsNone(parse_student_id("11648001"))  # 還沒入學的學年度、不存在的科系
+        two = parse_student_id("11436001")  # 二技：知道學制，但課程資料沒有二技
+        self.assertEqual((two["programName"], two["dept"]), ("二技", None))
+
+
+class StudentBootTests(Base):
+    def test_boot_has_student(self):
+        self.login({**SCHOOL_CLAIMS, "email": "11446001@ntub.edu.tw"})
+        self.assertEqual(self.client.get("/app/").context["boot"]["student"]["dept"], "406")
+
+    def test_boot_without_student_id(self):
+        self.login()
+        self.assertIsNone(self.client.get("/app/").context["boot"]["student"])

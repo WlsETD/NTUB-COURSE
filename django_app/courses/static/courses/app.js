@@ -61,7 +61,7 @@
       themeSystem:"跟隨系統",themeLight:"淺色",themeDark:"深色",themeAria:"切換配色",langBtn:"EN",langAria:"Switch to English",langToast:"已切換為中文",
       done:"已修過此課程",minGrade:"{0}以上才能選",drawing:"抽籤進行中",noSeat:"抽籤後已無空缺名額",clash:"與「{0}」衝堂",pre:"尚未修畢先修課 {0}",overMax:"加選後超過學分上限 {0}",
       cantAdd:"無法加選：{0}",addedAfter:"已加選「{0}」，名額 {1}/{2}",regOver:"已登記「{0}」，{1}/{2} 超額，截止後抽籤",regOk:"已登記「{0}」，{1}/{2}，截止後直接錄取",
-      dropReq:"已取消必修「{0}」，畢業前仍需補修",dropped:"已退選「{0}」",grpSel:"已選課程",ttQ:"要退選這門課嗎？",ttKeep:"保留",ttReqWarn:"這是本班必修，退選後畢業前仍需補修。",ttBlkAria:"{0}，點選可退選",lowCredit:"提醒：目前學分低於下限 {0}",
+      dropReq:"已取消必修「{0}」，畢業前仍需補修",dropped:"已退選「{0}」",grpSel:"已選課程",idLine:"{0} · {1}{2} · 學號 {3}",idNoData:"{0} · 學號 {1} · 目前只有四技日間部的課程資料",prog4:"四技",prog3:"二技",homeTag:"（本系）",deptViewAria:"查看其他科系的課程",viewDept:"正在查看{0}的課程，你的選課與必修不變",viewHome:"回到本系課程",ttQ:"要退選這門課嗎？",ttKeep:"保留",ttReqWarn:"這是本班必修，退選後畢業前仍需補修。",ttBlkAria:"{0}，點選可退選",lowCredit:"提醒：目前學分低於下限 {0}",
       gradTitle:"畢業學分進度",total:"合計 {0} / {1}",gap:"差 {0}",reached:"已達成",had:"已修",now:"本學期",
       crTitle:"本學期學分",crMax:"/ 上限 {0}",selCount:"已選 {0} 門",stNeed:"尚差 {0} 學分達下限",stMax:"已達學分上限",stLeft:"可再選 {0} 學分",
       phase1:"階段一 · 登記中，可超額登記，截止後抽籤",phase3:"階段三 · 加退選，剩餘名額先搶先贏",
@@ -73,13 +73,13 @@
       lotDrawing:"抽籤中…",lotResult:"抽籤結果",lotSum:"中籤 {0} 門 · 未中籤 {1} 門",spin:"抽籤中",direct:"直接錄取",win:"中籤",lose:"未中籤",reset:"重新登記",resetHint:"已進入加退選，空缺名額先搶先贏",
       regTitle:"登記狀態",regCount:"登記 {0} 門 · 超額 {1} 門",overList:"有 {0} 門課登記人數超過名額，截止後會抽籤：{1}",noneOver:"目前登記的課都沒有超額，截止後會全部直接錄取。",runLot:"截止並抽籤",runHint:"模擬登記截止後的抽籤批次",
       lotDone:"抽籤完成，{0} 門未中籤，可在加退選補選其他課",lotAll:"抽籤完成，全部錄取",backReg:"已回到登記階段",switched:"已切換為{0}，已自動帶入 {1} 門必修",
-      stOverCap:"已選 {0} 學分，超出上限的 {1} 學分不予計算",tNoCount:"不計學分",tPartial:"計入 {0}/{1}",regExcess:"已登記「{0}」，超出 {1} 學分上限的部分不予計算",miniEx:"+{0} 不計",settings:"設定",gSub:"國立臺北商業大學 · 115-1 四技日間部",gSkip:"略過動畫",gH:"登入 NTUB COURSE",gDesc:"使用學校帳號（@ntub.edu.tw）登入，不需要另外註冊。",gLogin:"以學校帳號登入",gNote:"身分以你目前登入 Claude 的帳號 email 確認",gChecking:"確認身分中…",gNotSchool:"目前登入的帳號是 {0}，不是 @ntub.edu.tw 學校信箱，無法以學生身分登入。",gNoEmail:"這個預覽頁面無法讀取帳號 email，因此無法驗證學校信箱。正式上線版本會改用 Google 學校帳號登入。",gDemo:"以示範模式進入（未驗證身分）",gWelcome:"歡迎，{0}",gWelcomeDemo:"示範模式",gLogout:"登出",gDemoChip:"示範模式（未驗證）",bqTitle:"選課基本資料",bqHint:"個人可加選資格請以學校系統為準",bqItem:"項目",bqLimit:"上限",bqSel:"已選",bq1:"學分上下限",bq2:"總學分－已選學分",bq3:"跨部互選學分數－已選學分",bq4:"興趣選修科目數－已選",bq5:"成績優異可加選科目數－已選",bq6:"轉學轉系生可加選科目數－已選",bq7:"輔系雙主修可加選科目數－已選",bq8:"申請學程可加選科目數－已選",bq9:"研究所下修可加選科目數－已選",aiClose:"關閉",fontL:"字體",fontCubic:"俐方體11號（點陣）",fontNoto:"Noto Sans TC",fontToast:"字體：{0}",aiTitle:"AI 選課建議",aiSub:"說說你想學什麼，AI 從可選的課裡幫你挑",aiDeptL:"想從哪個學系選課",aiTextL:"你的興趣或目標",aiPh:"例如：想往資料分析發展，希望學 Python 和統計，週五不想排課",aiGo:"取得建議",aiStop:"停止",aiThinking:"AI 思考中，通常需要 10 到 40 秒…",aiNeed:"請先寫下你的興趣或目標",aiAddAll:"全部加入",aiAdd:"加入",aiAdded:"已加入",aiClash:"與已選課程衝堂",aiNone:"這個學系目前沒有可選又不衝堂的課",aiErr:"這次沒拿到建議，請稍後再試",aiDenied:"AI 服務目前無法使用（伺服器尚未設定 OpenAI 金鑰或額度不足）",saveErr:"選課沒有存到伺服器，請檢查網路；下次變動時會再試一次",saved:"已自動儲存",aiBusy:"使用太頻繁了，請稍等一下再試",aiDisc:"建議由 AI 產生，請自行確認是否符合系上規定",aiOther:"外系",aiAuto:"自動判斷（依你的描述）",aiClassify:"正在判斷和你描述相關的學系…",aiPicking:"已篩選：{0}，正在挑課…",aiChip:"AI 篩選：{0}",aiClearT:"清除 AI 篩選，只看本系課程",grpAi:"AI 篩選的外系課程 · {0}",aiFiltered:"AI 判斷相關學系：{0}。課程清單已加入這些學系的課。",deptAria:"選擇學系",srcAll:"全部",srcDept:"本系",srcGe:"通識",srcPe:"體育",srcMil:"軍訓",grpCls:"本班 · {0}",grpSame:"本系其他班級",grpLowDept:"本系低年級 · 學分與本學期合併計算",grpGe:"通識課程",grpPe:"體育",grpMil:"軍訓",autoNote2:"{0} · 本班必修 {1} 門已自動帶入，不需要可自行退選",autoNote0:"{0} · 本班這學期沒有可自動帶入的必修，請自行選課",dSwitch0:"已切換為{0}，本班這學期沒有可自動帶入的必修",undo:"復原",undone:"已復原先前的選課",clearQ:"清除搜尋",emptyQ:"「{0}」沒有符合的課程。",searchAll:"搜尋全部類別",srcNote:"開課資料取自北商全校課程查詢（115-1 四技日間部，2026/10/08 擷取）",termBreak:"本學期計入：必修 {0} · 選修 {1} · 通識 {2}",sampleNote:"已修學分為範例數字",gradNeed:"畢業最低 {0} 學分",dSwitch:"已切換為{0}，本班必修 {1} 門已自動帶入",language:"語言",appearance:"外觀",grpMine:"{0}課程",grpLower:"低年級課程 · 學分與本學期合併計算",grpDone:"已修過 {0} 門",grpShow:"展開",grpHide:"收合",deadline:"登記截止：10 月 15 日 17:00，截止後由系統抽籤並公告結果",ncOn:"只顯示和目前課表不衝堂的課",ncOff:"顯示全部課程",accentToast:"主題色：{0}",themeToast:"配色：{0}",sep:"、",slot:"週{0} {1}–{2}節",slot1:"週{0} 第{1}節",day:"週{0}"},
+      stOverCap:"已選 {0} 學分，超出上限的 {1} 學分不予計算",tNoCount:"不計學分",tPartial:"計入 {0}/{1}",regExcess:"已登記「{0}」，超出 {1} 學分上限的部分不予計算",miniEx:"+{0} 不計",settings:"設定",gSub:"國立臺北商業大學 · 115-1 四技日間部",gSkip:"略過動畫",gH:"登入 NTUB COURSE",gDesc:"使用學校帳號（@ntub.edu.tw）登入，不需要另外註冊。",gLogin:"以學校帳號登入",gNote:"身分以你目前登入 Claude 的帳號 email 確認",gChecking:"確認身分中…",gNotSchool:"目前登入的帳號是 {0}，不是 @ntub.edu.tw 學校信箱，無法以學生身分登入。",gNoEmail:"這個預覽頁面無法讀取帳號 email，因此無法驗證學校信箱。正式上線版本會改用 Google 學校帳號登入。",gDemo:"以示範模式進入（未驗證身分）",gWelcome:"歡迎，{0}",gWelcomeDemo:"示範模式",gLogout:"登出",gDemoChip:"示範模式（未驗證）",bqTitle:"選課基本資料",bqHint:"個人可加選資格請以學校系統為準",bqItem:"項目",bqLimit:"上限",bqSel:"已選",bq1:"學分上下限",bq2:"總學分－已選學分",bq3:"跨部互選學分數－已選學分",bq4:"興趣選修科目數－已選",bq5:"成績優異可加選科目數－已選",bq6:"轉學轉系生可加選科目數－已選",bq7:"輔系雙主修可加選科目數－已選",bq8:"申請學程可加選科目數－已選",bq9:"研究所下修可加選科目數－已選",aiClose:"關閉",fontL:"字體",fontCubic:"俐方體11號（點陣）",fontNoto:"Noto Sans TC",fontToast:"字體：{0}",aiTitle:"AI 選課建議",aiSub:"說說你想學什麼，AI 從可選的課裡幫你挑",aiDeptL:"想從哪個學系選課",aiTextL:"你的興趣或目標",aiPh:"例如：想往資料分析發展，希望學 Python 和統計，週五不想排課",aiGo:"取得建議",aiStop:"停止",aiThinking:"AI 思考中，通常需要 10 到 40 秒…",aiNeed:"請先寫下你的興趣或目標",aiAddAll:"全部加入",aiAdd:"加入",aiAdded:"已加入",aiClash:"與已選課程衝堂",aiNone:"這個學系目前沒有可選又不衝堂的課",aiErr:"這次沒拿到建議，請稍後再試",aiDenied:"AI 服務目前無法使用（伺服器尚未設定 OpenAI 金鑰或額度不足）",saveErr:"選課沒有存到伺服器，請檢查網路；下次變動時會再試一次",saved:"已自動儲存",aiBusy:"使用太頻繁了，請稍等一下再試",aiDisc:"建議由 AI 產生，請自行確認是否符合系上規定",aiOther:"外系",aiAuto:"自動判斷（依你的描述）",aiClassify:"正在判斷和你描述相關的學系…",aiPicking:"已篩選：{0}，正在挑課…",aiChip:"AI 篩選：{0}",aiClearT:"清除 AI 篩選，只看本系課程",grpAi:"AI 篩選的外系課程 · {0}",aiFiltered:"AI 判斷相關學系：{0}。課程清單已加入這些學系的課。",deptAria:"選擇學系",srcAll:"全部",srcDept:"本系",srcGe:"通識",srcPe:"體育",srcMil:"軍訓",grpCls:"本班 · {0}",grpSame:"本系其他班級",grpViewSame:"{0}",grpViewLow:"{0} · 低年級",grpLowDept:"本系低年級 · 學分與本學期合併計算",grpGe:"通識課程",grpPe:"體育",grpMil:"軍訓",autoNote2:"{0} · 本班必修 {1} 門已自動帶入，不需要可自行退選",autoNote0:"{0} · 本班這學期沒有可自動帶入的必修，請自行選課",dSwitch0:"已切換為{0}，本班這學期沒有可自動帶入的必修",undo:"復原",undone:"已復原先前的選課",clearQ:"清除搜尋",emptyQ:"「{0}」沒有符合的課程。",searchAll:"搜尋全部類別",srcNote:"開課資料取自北商全校課程查詢（115-1 四技日間部，2026/10/08 擷取）",termBreak:"本學期計入：必修 {0} · 選修 {1} · 通識 {2}",sampleNote:"已修學分為範例數字",gradNeed:"畢業最低 {0} 學分",dSwitch:"已切換為{0}，本班必修 {1} 門已自動帶入",language:"語言",appearance:"外觀",grpMine:"{0}課程",grpLower:"低年級課程 · 學分與本學期合併計算",grpDone:"已修過 {0} 門",grpShow:"展開",grpHide:"收合",deadline:"登記截止：10 月 15 日 17:00，截止後由系統抽籤並公告結果",ncOn:"只顯示和目前課表不衝堂的課",ncOff:"顯示全部課程",accentToast:"主題色：{0}",themeToast:"配色：{0}",sep:"、",slot:"週{0} {1}–{2}節",slot1:"週{0} 第{1}節",day:"週{0}"},
     en:{title:"NTUB COURSE",sub:"National Taipei University of Business · Fall 2026 add/drop · 4-year day program",palette:"Theme",custom:"Custom color",gradeAria:"Select year",
       search:"Search course, instructor or code",noClash:"Hide conflicts",week:"Weekly timetable",ttHint:"Tap a free slot to see courses at that time",slotChip:"Time: {0}",slotClearT:"Clear the time filter",cellPick:"{0}: show courses at this time",slotEmpty:"No courses available at {0}.",slotToast:"{1} courses at {0}",navList:"Courses",navTable:"Timetable",navMe:"Progress",navAria:"Main navigation",
       themeSystem:"System",themeLight:"Light",themeDark:"Dark",themeAria:"Change appearance",langBtn:"中文",langAria:"切換為中文",langToast:"Switched to English",
       done:"Already completed",minGrade:"Open to {0} and above",drawing:"Lottery in progress",noSeat:"No seats left after the lottery",clash:"Conflicts with {0}",pre:"Prerequisite not met: {0}",overMax:"Would exceed the {0}-credit limit",
       cantAdd:"Can't add: {0}",addedAfter:"Added {0} ({1}/{2})",regOver:"Registered for {0}. {1}/{2} is over capacity, so a lottery runs after the deadline",regOk:"Registered for {0} ({1}/{2}). You'll be admitted after the deadline",
-      dropReq:"Removed required course {0}. You still need it to graduate",dropped:"Dropped {0}",grpSel:"Selected",ttQ:"Drop this course?",ttKeep:"Keep",ttReqWarn:"This is a required course for your class. You'll still need to take it before you graduate.",ttBlkAria:"{0}. Select to drop",lowCredit:"Heads up: you're below the {0}-credit minimum",
+      dropReq:"Removed required course {0}. You still need it to graduate",dropped:"Dropped {0}",grpSel:"Selected",idLine:"{0} · {1}, {2} · ID {3}",idNoData:"{0} · ID {1} · Only 4-year day program courses are available",prog4:"4-year program",prog3:"2-year program",homeTag:" (my dept)",deptViewAria:"Browse other departments' courses",viewDept:"Browsing {0}. Your courses and required courses stay the same",viewHome:"Back to your department",ttQ:"Drop this course?",ttKeep:"Keep",ttReqWarn:"This is a required course for your class. You'll still need to take it before you graduate.",ttBlkAria:"{0}. Select to drop",lowCredit:"Heads up: you're below the {0}-credit minimum",
       gradTitle:"Graduation progress",total:"Total {0} / {1}",gap:"{0} to go",reached:"Done",had:"Completed",now:"This term",
       crTitle:"Credits this term",crMax:"/ max {0}",selCount:"{0} courses",stNeed:"{0} more credits to reach the minimum",stMax:"At the credit limit",stLeft:"{0} credits available",
       phase1:"Phase 1 · Registration open. Over-capacity courses go to a lottery",phase3:"Phase 3 · Add/drop. Remaining seats are first come, first served",
@@ -91,7 +91,7 @@
       lotDrawing:"Drawing…",lotResult:"Lottery results",lotSum:"{0} won · {1} not drawn",spin:"Drawing",direct:"Admitted",win:"Won",lose:"Not drawn",reset:"Start over",resetHint:"Add/drop is open. Remaining seats are first come, first served",
       regTitle:"Registration",regCount:"{0} registered · {1} over capacity",overList:"{0} of your courses are over capacity and will go to a lottery: {1}",noneOver:"None of your courses are over capacity, so you'll be admitted to all of them.",runLot:"Close and run lottery",runHint:"Simulates the lottery after the deadline",
       lotDone:"Lottery done. {0} course(s) not drawn; pick others during add/drop",lotAll:"Lottery done. You're admitted to everything",backReg:"Back to registration",switched:"Switched to {0}. {1} required courses added",
-      stOverCap:"{0} credits selected. The {1} over the limit won't count",tNoCount:"Not counted",tPartial:"{0}/{1} cr counted",regExcess:"Registered for {0}. Credits over the {1}-credit limit won't count",miniEx:"+{0} not counted",settings:"Settings",gSub:"National Taipei University of Business · Fall 2026 · 4-year day program",gSkip:"Skip intro",gH:"Sign in to NTUB COURSE",gDesc:"Sign in with your school account (@ntub.edu.tw). No separate sign-up needed.",gLogin:"Sign in with school account",gNote:"Your identity is checked against the email of the Claude account you are signed in with",gChecking:"Checking your account…",gNotSchool:"You are signed in as {0}, which is not an @ntub.edu.tw school address, so you can't sign in as a student.",gNoEmail:"This preview can't read your account email, so it can't verify a school address. The deployed version signs in with Google school accounts.",gDemo:"Enter demo mode (identity not verified)",gWelcome:"Welcome, {0}",gWelcomeDemo:"Demo mode",gLogout:"Sign out",gDemoChip:"Demo mode (not verified)",bqTitle:"Registration quotas",bqHint:"Personal eligibility follows the school system",bqItem:"Item",bqLimit:"Limit",bqSel:"Selected",bq1:"Credit range",bq2:"Total credits − selected",bq3:"Cross-division credits − selected",bq4:"Interest electives − selected",bq5:"Extra courses for top grades − selected",bq6:"Extra courses for transfer students − selected",bq7:"Extra courses for minor / double major − selected",bq8:"Extra courses for programs − selected",bq9:"Graduate courses taken early − selected",aiClose:"Close",fontL:"Font",fontCubic:"Cubic 11 (pixel)",fontNoto:"Noto Sans TC",fontToast:"Font: {0}",aiTitle:"AI course advisor",aiSub:"Tell it what you want to learn and it picks from courses you can take",aiDeptL:"Department to choose from",aiTextL:"Your interests or goals",aiPh:"e.g. I want to go into data analysis, learn Python and statistics, and keep Fridays free",aiGo:"Get suggestions",aiStop:"Stop",aiThinking:"Thinking. This usually takes 10 to 40 seconds…",aiNeed:"Write down your interests or goals first",aiAddAll:"Add all",aiAdd:"Add",aiAdded:"Added",aiClash:"Conflicts with your timetable",aiNone:"No courses in this department fit your timetable right now",aiErr:"Couldn't get suggestions this time. Try again later",aiDenied:"The AI service is unavailable (OpenAI key not set or out of credit)",saveErr:"Couldn't save to the server. Check your connection; it will retry on your next change",saved:"Saved automatically",aiBusy:"Too many requests. Wait a moment and try again",aiDisc:"Suggestions are AI-generated. Check them against your department's rules",aiOther:"Other dept.",aiAuto:"Auto (from your description)",aiClassify:"Working out which departments match your description…",aiPicking:"Filtered to {0}. Picking courses…",aiChip:"AI filter: {0}",aiClearT:"Clear the AI filter and show only your department",grpAi:"Courses from other departments picked by AI · {0}",aiFiltered:"Matching departments: {0}. Their courses are now in the list.",deptAria:"Select department",srcAll:"All",srcDept:"My dept.",srcGe:"Gen Ed",srcPe:"PE",srcMil:"Military",grpCls:"My class · {0}",grpSame:"Other classes in my dept.",grpLowDept:"Lower-year courses · credits count toward this term",grpGe:"General education",grpPe:"Physical education",grpMil:"Military training",autoNote2:"{0} · Required courses for your class were added ({1}). Drop any you don't need.",autoNote0:"{0} · No required courses to add for your class this term. Pick freely.",dSwitch0:"Switched to {0}. No required courses to add this term",undo:"Undo",undone:"Previous selection restored",clearQ:"Clear search",emptyQ:"No courses match \u201c{0}\u201d.",searchAll:"Search all categories",srcNote:"Offerings from the NTUB course search (Fall 2026, 4-year day program, captured 2026-10-08). Course names and instructors are shown as published.",termBreak:"Counted this term: required {0} · elective {1} · gen ed {2}",sampleNote:"Earned credits are sample figures",gradNeed:"{0} credits to graduate",dSwitch:"Switched to {0}. Required courses for your class added ({1})",language:"Language",appearance:"Appearance",grpMine:"{0} courses",grpLower:"Lower-year courses · credits count toward this term",grpDone:"Completed ({0})",grpShow:"Show",grpHide:"Hide",deadline:"Registration closes Oct 15 at 17:00. The system then runs the lottery and posts results",ncOn:"Showing only courses that fit your timetable",ncOff:"Showing all courses",accentToast:"Theme: {0}",themeToast:"Appearance: {0}",sep:", ",slot:"{0} P{1}–{2}",slot1:"{0} P{1}",day:"{0}"}
+      stOverCap:"{0} credits selected. The {1} over the limit won't count",tNoCount:"Not counted",tPartial:"{0}/{1} cr counted",regExcess:"Registered for {0}. Credits over the {1}-credit limit won't count",miniEx:"+{0} not counted",settings:"Settings",gSub:"National Taipei University of Business · Fall 2026 · 4-year day program",gSkip:"Skip intro",gH:"Sign in to NTUB COURSE",gDesc:"Sign in with your school account (@ntub.edu.tw). No separate sign-up needed.",gLogin:"Sign in with school account",gNote:"Your identity is checked against the email of the Claude account you are signed in with",gChecking:"Checking your account…",gNotSchool:"You are signed in as {0}, which is not an @ntub.edu.tw school address, so you can't sign in as a student.",gNoEmail:"This preview can't read your account email, so it can't verify a school address. The deployed version signs in with Google school accounts.",gDemo:"Enter demo mode (identity not verified)",gWelcome:"Welcome, {0}",gWelcomeDemo:"Demo mode",gLogout:"Sign out",gDemoChip:"Demo mode (not verified)",bqTitle:"Registration quotas",bqHint:"Personal eligibility follows the school system",bqItem:"Item",bqLimit:"Limit",bqSel:"Selected",bq1:"Credit range",bq2:"Total credits − selected",bq3:"Cross-division credits − selected",bq4:"Interest electives − selected",bq5:"Extra courses for top grades − selected",bq6:"Extra courses for transfer students − selected",bq7:"Extra courses for minor / double major − selected",bq8:"Extra courses for programs − selected",bq9:"Graduate courses taken early − selected",aiClose:"Close",fontL:"Font",fontCubic:"Cubic 11 (pixel)",fontNoto:"Noto Sans TC",fontToast:"Font: {0}",aiTitle:"AI course advisor",aiSub:"Tell it what you want to learn and it picks from courses you can take",aiDeptL:"Department to choose from",aiTextL:"Your interests or goals",aiPh:"e.g. I want to go into data analysis, learn Python and statistics, and keep Fridays free",aiGo:"Get suggestions",aiStop:"Stop",aiThinking:"Thinking. This usually takes 10 to 40 seconds…",aiNeed:"Write down your interests or goals first",aiAddAll:"Add all",aiAdd:"Add",aiAdded:"Added",aiClash:"Conflicts with your timetable",aiNone:"No courses in this department fit your timetable right now",aiErr:"Couldn't get suggestions this time. Try again later",aiDenied:"The AI service is unavailable (OpenAI key not set or out of credit)",saveErr:"Couldn't save to the server. Check your connection; it will retry on your next change",saved:"Saved automatically",aiBusy:"Too many requests. Wait a moment and try again",aiDisc:"Suggestions are AI-generated. Check them against your department's rules",aiOther:"Other dept.",aiAuto:"Auto (from your description)",aiClassify:"Working out which departments match your description…",aiPicking:"Filtered to {0}. Picking courses…",aiChip:"AI filter: {0}",aiClearT:"Clear the AI filter and show only your department",grpAi:"Courses from other departments picked by AI · {0}",aiFiltered:"Matching departments: {0}. Their courses are now in the list.",deptAria:"Select department",srcAll:"All",srcDept:"My dept.",srcGe:"Gen Ed",srcPe:"PE",srcMil:"Military",grpCls:"My class · {0}",grpSame:"Other classes in my dept.",grpViewSame:"{0}",grpViewLow:"{0} · lower years",grpLowDept:"Lower-year courses · credits count toward this term",grpGe:"General education",grpPe:"Physical education",grpMil:"Military training",autoNote2:"{0} · Required courses for your class were added ({1}). Drop any you don't need.",autoNote0:"{0} · No required courses to add for your class this term. Pick freely.",dSwitch0:"Switched to {0}. No required courses to add this term",undo:"Undo",undone:"Previous selection restored",clearQ:"Clear search",emptyQ:"No courses match \u201c{0}\u201d.",searchAll:"Search all categories",srcNote:"Offerings from the NTUB course search (Fall 2026, 4-year day program, captured 2026-10-08). Course names and instructors are shown as published.",termBreak:"Counted this term: required {0} · elective {1} · gen ed {2}",sampleNote:"Earned credits are sample figures",gradNeed:"{0} credits to graduate",dSwitch:"Switched to {0}. Required courses for your class added ({1})",language:"Language",appearance:"Appearance",grpMine:"{0} courses",grpLower:"Lower-year courses · credits count toward this term",grpDone:"Completed ({0})",grpShow:"Show",grpHide:"Hide",deadline:"Registration closes Oct 15 at 17:00. The system then runs the lottery and posts results",ncOn:"Showing only courses that fit your timetable",ncOff:"Showing all courses",accentToast:"Theme: {0}",themeToast:"Appearance: {0}",sep:", ",slot:"{0} P{1}–{2}",slot1:"{0} P{1}",day:"{0}"}
   };
   function tr(){return t.apply(null,arguments)}
   function t(k){var s=(STR[LANG][k]!=null?STR[LANG][k]:STR.zh[k]),a=arguments;return String(s).replace(/\{(\d)\}/g,function(_,i){return a[+i+1]})}
@@ -127,6 +127,12 @@
   function initialSel(){return autoReq()}
   var state={major:"406",grade:2,cls:"",sel:[],auto:[],wait:[],src:"dept",q:"",hover:null,justAdded:null,prevCr:null,first:true,popAll:false,noClash:false,showDone:false,aiFilter:[],slot:null,phase:"register",drawing:false,results:null};
   try{var sm=localStorage.getItem("cs-major");if(DEPTS.indexOf(sm)>=0)state.major=sm}catch(e){}
+  // 學號判斷出的本系與年級（伺服器解析 email，見 student_id.py）。有的話：班級與自動帶入的必修都以本系為準，
+  // 學系選單只用來「查看」其他科系的課（state.major = 正在看的科系），年級按鈕隱藏
+  var HOME=BOOT.student&&BOOT.student.dept&&DEPTS.indexOf(BOOT.student.dept)>=0?BOOT.student:null;
+  if(HOME){state.major=HOME.dept;state.grade=HOME.grade}
+  function homeDept(){return HOME?HOME.dept:state.major}
+  function homeGrade(){return HOME?HOME.grade:state.grade}
   function done(){return []}
   // graduation: NTUB requires at least 128 credits; credits earned in earlier terms are sample figures
   var GRAD_TOTAL=128,EARNED={1:0,2:34,3:68,4:100};
@@ -143,11 +149,12 @@
 
   var $=function(id){return document.getElementById(id)};
   var byId={};COURSES.forEach(function(c){byId[c.id]=c});
-  state.cls=classesFor(state.major,state.grade)[0]||"";state.sel=initialSel();state.auto=state.sel.slice();
+  state.cls=classesFor(homeDept(),homeGrade())[0]||"";state.sel=initialSel();state.auto=state.sel.slice();
   // 學生上次存在 Firestore 的選課（第一次登入時沒有，就用預設：本班必修自動帶入）
   (function(sv){if(!sv||DEPTS.indexOf(sv.major)<0)return;
-    state.major=sv.major;state.grade=Math.min(4,Math.max(1,+sv.grade||1));
-    var cl=classesFor(state.major,state.grade);state.cls=cl.indexOf(sv.cls)>=0?sv.cls:(cl[0]||"");
+    if(HOME){if(sv.major!==HOME.dept||+sv.grade!==HOME.grade)return} // 存檔是別的科系或年級：以學號為準重新帶入必修
+    else{state.major=sv.major;state.grade=Math.min(4,Math.max(1,+sv.grade||1))}
+    var cl=classesFor(homeDept(),homeGrade());state.cls=cl.indexOf(sv.cls)>=0?sv.cls:(cl[0]||"");
     state.sel=(sv.sel||[]).filter(function(id){return byIdOK(id)});state.auto=(sv.auto||[]).filter(function(id){return byIdOK(id)})})(BOOT.saved);
 
   function seatsLeft(c){return c.cap-c.enr-(state.sel.indexOf(c.id)>=0?1:0)+0}
@@ -306,6 +313,7 @@
       ["grpGe",function(c){return c.src==="ge"}],["grpPe",function(c){return c.src==="pe"}],["grpMil",function(c){return c.src==="mil"}]];
     var i=0,h="";
     function head(txt,n){return '<div class="grp"><span>'+txt+'</span><span class="grp-n">'+n+'</span></div>'}
+    if(HOME&&state.major!==HOME.dept){var vn=deptName(state.major);G[2][0]="grpViewSame";G[2][2]=vn+" · "+gname(state.grade);G[3][0]="grpViewLow";G[3][2]=vn} // 查看其他科系：分組名稱不要寫「本系」
     var used={};
     G.forEach(function(g){var l=arr.filter(function(c){return !used[c.id]&&g[1](c)});l.forEach(function(c){used[c.id]=1});if(!l.length)return;h+=head(t(g[0],g[2]),l.length);h+=l.map(function(c){return card(c,i++)}).join("")});
     L.innerHTML=h}
@@ -333,9 +341,9 @@
     $("mine").innerHTML=rows||'<div class="empty">'+t("mineEmpty")+'</div>'}
 
   function renderGrades(){
-    var ds=$("deptSel");ds.innerHTML=DEPTS.map(function(d){return '<option value="'+d+'"'+(d===state.major?' selected':'')+'>'+esc(deptName(d))+'</option>'}).join("");
+    var ds=$("deptSel");ds.innerHTML=DEPTS.map(function(d){return '<option value="'+d+'"'+(d===state.major?' selected':'')+'>'+esc(deptName(d)+(HOME&&d===HOME.dept?t("homeTag"):""))+'</option>'}).join("");
     $("grades").innerHTML=[1,2,3,4].map(function(g){return '<button type="button" role="radio" class="seg-b" data-grade="'+g+'" aria-checked="'+(state.grade===g)+'">'+gname(g)+'</button>'}).join("");
-    var cl=classesFor(state.major,state.grade);
+    var cl=classesFor(homeDept(),homeGrade());$("grades").hidden=!!HOME;
     $("clsSeg").innerHTML=cl.length>1?cl.map(function(x){return '<button type="button" role="radio" class="seg-b" data-cls="'+esc(x)+'" aria-checked="'+(state.cls===x)+'">'+esc(x.replace(/^.*年/,""))+'</button>'}).join(""):"";
     $("clsSeg").hidden=cl.length<2;
     $("doneLine").innerHTML='<span class="auto-note">'+(state.auto.length?t("autoNote2",esc(state.cls),state.auto.length):t("autoNote0",esc(state.cls)))+'</span>'+t("srcNote")}
@@ -343,7 +351,7 @@
     if(state.drawing)return;
     COURSES.forEach(function(c){c.after=false});
     var snap=resetFor.snap;resetFor.snap=null;
-    var cl=classesFor(state.major,state.grade);if(cl.indexOf(state.cls)<0)state.cls=cl[0]||"";
+    var cl=classesFor(homeDept(),homeGrade());if(cl.indexOf(state.cls)<0)state.cls=cl[0]||"";
     ai.res=null;if(ai.ctl)ai.ctl.abort();
     state.sel=initialSel();state.auto=state.sel.slice();state.wait=[];state.hover=null;state.popAll=true;state.phase="register";state.results=null;
     if(msgKey){var m=state.auto.length?t(msgKey,state.cls,state.auto.length):t("dSwitch0",state.cls);
@@ -416,17 +424,17 @@
       // step 1: map the student's words to departments ("財務" → 財務金融系 …) with a quick call, then filter the list to them
       st.textContent=t("aiClassify");
       try{
-        var cl=await apiPost("/api/ai/depts/",{text:goal,major:state.major},ai.ctl.signal);
+        var cl=await apiPost("/api/ai/depts/",{text:goal,major:homeDept()},ai.ctl.signal);
         depts=(Array.isArray(cl&&cl.depts)?cl.depts:[]).map(String).filter(function(d){return DEPTS.indexOf(d)>=0}).slice(0,3);
       }catch(e){if(e&&e.code==="cancelled"){aiDone("");return}if(e&&(e.code==="rate_limited"||e.code==="ai_unavailable")){aiFail(e.code);return}depts=[]}
-      if(!depts.length)depts=[state.major];
+      if(!depts.length)depts=[homeDept()];
       state.aiFilter=depts.slice();state.src="dept";renderChips();renderList(true);
     }
     var cands=aiCandidates(depts);
     if(!cands.length){aiDone(t("aiNone"));return}
     st.textContent=choice==="auto"?t("aiPicking",depts.map(deptName).join(t("sep"))):t("aiThinking");
     try{
-      var r=await apiPost("/api/ai/suggest/",{text:goal,major:state.major,grade:state.grade,cls:state.cls,depts:depts,sel:state.sel,cands:cands.map(function(c){return c.id}).slice(0,400),lang:LANG},ai.ctl.signal);
+      var r=await apiPost("/api/ai/suggest/",{text:goal,major:homeDept(),grade:homeGrade(),cls:state.cls,depts:depts,sel:state.sel,cands:cands.map(function(c){return c.id}).slice(0,400),lang:LANG},ai.ctl.signal);
       var byC={};cands.forEach(function(c){byC[c.id]=c});
       var picks=[],taken=[];
       (Array.isArray(r&&r.picks)?r.picks:[]).forEach(function(x){var c=byC[String(x&&x.id)];if(!c||taken.indexOf(c.id)>=0)return;taken.push(c.id);picks.push({c:c,why:String(x.reason||"")})});
@@ -464,7 +472,7 @@
     return data}
   // 選課有變動就存到 Firestore（停 0.6 秒後送出，連續點很多次只會存一次）
   var lastSaved=JSON.stringify(selPayload()),saveT=null,saving=false;
-  function selPayload(){return {major:state.major,grade:state.grade,cls:state.cls,sel:state.sel,auto:state.auto}}
+  function selPayload(){return {major:homeDept(),grade:homeGrade(),cls:state.cls,sel:state.sel,auto:state.auto}}
   function queueSave(){if(JSON.stringify(selPayload())===lastSaved)return;clearTimeout(saveT);saveT=setTimeout(saveNow,600)}
   async function saveNow(){
     if(saving){queueSave();return}
@@ -526,7 +534,10 @@
     if(v==="list"&&prev!=="list")renderList(true);
     if(v==="table"){state.popAll=true;renderTT();state.popAll=false}
     try{window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}catch(e){window.scrollTo(0,0)}}
-  $("deptSel").addEventListener("change",function(e){snapshot();state.major=e.target.value;state.q="";$("q").value="";state.cls="";try{localStorage.setItem("cs-major",state.major)}catch(er){}resetFor("dSwitch")});
+  $("deptSel").addEventListener("change",function(e){
+    if(HOME){state.major=e.target.value;state.q="";$("q").value="";state.slot=null;state.popAll=true;render();
+      toast(state.major===HOME.dept?tr("viewHome"):t("viewDept",deptName(state.major)));return}
+    snapshot();state.major=e.target.value;state.q="";$("q").value="";state.cls="";try{localStorage.setItem("cs-major",state.major)}catch(er){}resetFor("dSwitch")});
   document.addEventListener("toggle",function(e){if(e.target.id==="basic"){basicOpen=e.target.open;try{localStorage.setItem("cs-basic",basicOpen?"1":"0")}catch(er){}}},true);
   var qT;
   $("q").addEventListener("input",function(e){state.q=e.target.value;clearTimeout(qT);qT=setTimeout(function(){renderList(true)},120)});
@@ -600,12 +611,15 @@
     document.documentElement.lang=LANG==="en"?"en":"zh-Hant";
     document.title=tr("title");
     if(BOOT.name){$("hello").textContent=tr("gWelcome",BOOT.name);$("hello").hidden=false}
+    var st=BOOT.student;if(st){var pg=tr("prog"+st.program);
+      $("who").textContent=HOME?t("idLine",deptName(HOME.dept),pg,gname(HOME.grade),st.sid):t("idNoData",pg,st.sid);$("who").hidden=false}
     document.querySelectorAll("[data-i18n]").forEach(function(el){el.textContent=tr(el.getAttribute("data-i18n"))});
     document.querySelectorAll('[data-i18n="title"]').forEach(function(el){el.innerHTML=keepWords(tr("title"))});
     // 副標題按「 · 」分段，手機上整段一起換行
     document.querySelectorAll(".sub[data-i18n]").forEach(function(el){el.innerHTML=tr(el.getAttribute("data-i18n")).split(" · ").map(function(s){return '<span class="sub-seg">'+esc(s)+'</span>'}).join(" · ")});
     document.querySelectorAll("[data-i18n-ph]").forEach(function(el){el.placeholder=tr(el.getAttribute("data-i18n-ph"))});
     document.querySelectorAll("[data-i18n-aria]").forEach(function(el){el.setAttribute("aria-label",tr(el.getAttribute("data-i18n-aria")))});
+    if(HOME)$("deptSel").setAttribute("aria-label",tr("deptViewAria"));
     document.querySelectorAll("[data-langv]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.langv===LANG)});
     applyTheme();applyFont();if(typeof gateText==="function"&&!$("gate").hidden)gateText()}
   var FONT="cubic";try{var sf=localStorage.getItem("cs-font");if(sf==="noto"||sf==="cubic")FONT=sf}catch(e){}

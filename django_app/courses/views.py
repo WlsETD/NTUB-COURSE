@@ -10,6 +10,7 @@ from accounts.decorators import school_login_required
 
 from . import ai
 from .store import clean_selection, course_rows_for, get_store
+from .student_id import student_from_email
 
 
 def _json_body(request):
@@ -34,6 +35,8 @@ def app_page(request):
         "email": me["email"],
         # 頁首的「歡迎，{名字}」；Google 帳號沒有名字時用信箱 @ 前面的部分
         "name": me["name"] or me["email"].split("@")[0],
+        # 從學號判斷的學制、科系、年級；前端用它自動帶入本系本班的必修
+        "student": student_from_email(me["email"]),
         "saved": {k: saved[k] for k in ("major", "grade", "cls", "sel", "auto") if k in saved} if saved else None,
         "ai": ai.enabled(),
     }

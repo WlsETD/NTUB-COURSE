@@ -52,6 +52,7 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 h1{font-family:var(--font-display);font-size:30px;font-weight:700;line-height:1.2;margin:0;letter-spacing:.04em}
 .sub{color:var(--muted);margin:4px 0 0;font-size:13px}
 .hello{color:var(--accent);margin:0 0 4px;font-size:14px;font-weight:600}
+.who{color:var(--muted);margin:-2px 0 4px;font-size:12.5px}
 .tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:10px}
 .tab{border:0;background:transparent;padding:7px 16px;border-radius:7px;color:var(--muted);font-weight:500}
 .tab[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
