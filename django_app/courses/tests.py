@@ -267,3 +267,39 @@ class NoFakeDataTests(Base):
         self.login(TeacherTests.TEACHER)
         r = self.post("/api/selection/", {"major": "406", "grade": 2, "sel": []})
         self.assertEqual(r.status_code, 403)
+
+
+class AutoRequiredSyncTests(Base):
+    STUDENT = {**SCHOOL_CLAIMS, "uid": "u-auto", "email": "11446001@ntub.edu.tw"}
+
+    def saved(self):
+        return store.get_store().get_student("u-auto")
+
+    def test_first_visit_saves_required_on_server(self):
+        from courses.teachers import courses_taught
+        self.login(self.STUDENT)
+        self.client.get("/app/")  # 沒有跑任何前端 JS
+        s = self.saved()
+        self.assertEqual((s["major"], s["grade"], s["cls"]), ("406", 2, "資管二年甲班"))
+        self.assertTrue(s["sel"] and s["sel"] == s["auto"])
+        kuai = courses_taught(["蒯思齊"], store.get_store().list_courses())[0]["id"]  # 資訊網路是資管二甲必修
+        self.assertIn(kuai, s["sel"])
+        self.client.post("/auth/logout/")
+        self.login(TeacherTests.TEACHER)
+        course = next(c for c in self.client.get("/teacher/").context["courses"] if c["id"] == kuai)
+        self.assertEqual([x["sid"] for x in course["students"]], ["11446001"])
+
+    def test_other_department_save_is_replaced(self):
+        self.login(self.STUDENT)
+        self.post("/api/selection/", {"major": "402", "grade": 2, "cls": "財金二年甲班", "sel": ["s299"]})
+        self.client.get("/app/")
+        self.assertEqual(self.saved()["major"], "406")
+        self.assertNotIn("s299", self.saved()["sel"])
+
+    def test_own_choices_are_kept(self):
+        self.login(self.STUDENT)
+        self.client.get("/app/")
+        auto = self.saved()["auto"]
+        self.post("/api/selection/", {"major": "406", "grade": 2, "cls": "資管二年甲班", "sel": auto[1:], "auto": auto})  # 退掉一門必修
+        self.client.get("/app/")
+        self.assertEqual(self.saved()["sel"], auto[1:])

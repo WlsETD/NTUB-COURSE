@@ -12,6 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 from accounts.decorators import school_login_required
 
 from . import ai
+from .autoreq import default_selection
 from .store import clean_selection, course_rows_for, get_store
 from .student_id import student_from_email
 from .teachers import courses_taught, teacher_names
@@ -35,14 +36,22 @@ def app_page(request):
     me = _me(request)
     if teacher_names(me["email"]):
         return redirect("courses:teacher")
-    saved = get_store().get_student(me["uid"])
+    store = get_store()
+    saved = store.get_student(me["uid"])
+    student = student_from_email(me["email"])
+    # 學號判斷出本系、年級，但還沒存過（或存的是別系／別年級）：伺服器直接帶入本班必修並存檔，老師端馬上看得到
+    if student and student["dept"] and (not saved or saved.get("major") != student["dept"] or saved.get("grade") != student["grade"]):
+        default = default_selection(store.list_courses(), student["dept"], student["grade"])
+        if default:
+            store.save_selection(me["uid"], me["email"], default, me["name"])
+            saved = {**(saved or {}), **default}
     sel = (saved or {}).get("sel") or []
     boot = {
         "email": me["email"],
         # 頁首的「歡迎，{名字}」；Google 帳號沒有名字時用信箱 @ 前面的部分
         "name": me["name"] or me["email"].split("@")[0],
         # 從學號判斷的學制、科系、年級；前端用它自動帶入本系本班的必修
-        "student": student_from_email(me["email"]),
+        "student": student,
         "saved": {k: saved[k] for k in ("major", "grade", "cls", "sel", "auto") if k in saved} if saved else None,
         "ai": ai.enabled(),
     }
