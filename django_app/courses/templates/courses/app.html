@@ -1,0 +1,116 @@
+{% load static %}<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NTUB COURSE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preload" href="{% static 'courses/fonts/cubic11.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'courses/app.css' %}">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="gate" id="gate" hidden role="dialog" aria-modal="true" aria-labelledby="gTitle">
+  <div class="g-stage" id="gStage">
+    <div class="g-intro" id="gIntro">
+      <div class="g-tiles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <h2 class="g-title" id="gTitle"></h2>
+      <p class="g-sub" id="gSub"></p>
+      <span class="g-line" aria-hidden="true"></span>
+    </div>
+    <div class="g-card" id="gCard" hidden>
+      <div class="g-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 4v17M13.5 9v12"/></svg></div>
+      <h3 id="gH"></h3>
+      <p class="g-desc" id="gDesc"></p>
+      <button type="button" class="g-btn" id="gLogin"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 5l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg><span id="gLoginT"></span></button>
+      <p class="g-note" id="gNote"></p>
+      <div class="g-msg" id="gMsg" hidden></div>
+      <button type="button" class="g-demo" id="gDemo" hidden></button>
+      <div class="g-ok" id="gOk" hidden><span class="g-okic"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b id="gOkT"></b></div>
+    </div>
+    <button type="button" class="g-skip" id="gSkip"></button>
+  </div>
+</div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="hello" id="hello" hidden></p>
+      <h1 data-i18n="title"><span class="bw">NTUB</span> <span class="bw">COURSE</span></h1>
+      <p class="sub" data-i18n="sub">資訊工程學系 · 115 學年度第 1 學期加退選 · 範例資料</p>
+    </div>
+    <div class="hdr-r">
+    <button type="button" class="theme-btn logout-btn" id="logoutBtn" hidden data-i18n-aria="gLogout" aria-label="登出" title="登出"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 012 2v12a2 2 0 01-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg><span data-i18n="gLogout">登出</span></button>
+    <div class="pal-wrap">
+      <button class="theme-btn" id="palBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n-aria="settings" aria-label="設定"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="pal-dot" aria-hidden="true"></span></button>
+      <div class="pal-pop" id="palPop" hidden>
+        <div class="acct" id="acct" hidden><span class="acct-e" id="acctE"></span><button type="button" class="acct-out" id="acctOut" data-i18n="gLogout">登出</button></div>
+        <div class="pal-h" data-i18n="language">語言</div>
+        <div class="seg set-seg" id="langSeg"><button type="button" class="seg-b" data-langv="zh">中文</button><button type="button" class="seg-b" data-langv="en">English</button></div>
+        <div class="pal-h" data-i18n="appearance">外觀</div>
+        <div class="seg set-seg" id="themeSeg"></div>
+        <div class="pal-h" data-i18n="fontL">字體</div>
+        <div class="seg set-seg" id="fontSeg"><button type="button" class="seg-b font-b f-cubic" data-fontv="cubic">C</button><button type="button" class="seg-b font-b f-noto" data-fontv="noto">N</button></div>
+        <div class="pal-h" data-i18n="palette">主題色</div>
+        <div class="swatches" id="swatches"></div>
+        <label class="pal-custom" for="palCustom"><span data-i18n="custom">自訂顏色</span><input type="color" id="palCustom" value="#0e6b75"></label>
+      </div>
+    </div>
+    </div>
+  </header>
+
+  <section id="view-enroll" data-m="list">
+    <div class="grade-bar">
+      <select id="deptSel" class="dept-sel" data-i18n-aria="deptAria" aria-label="選擇學系"></select>
+      <div class="seg" id="grades" role="radiogroup" data-i18n-aria="gradeAria" aria-label="選擇年級"></div>
+      <div class="seg cls-seg" id="clsSeg" role="radiogroup"></div>
+      <p class="done-line" id="doneLine"></p>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="main">
+      <div class="col-list">
+        <div class="mini" id="mini" aria-live="polite"></div>
+        <div class="filters">
+          <input id="q" type="search" data-i18n-ph="search" placeholder="搜尋課名或老師" data-i18n-aria="search" aria-label="搜尋課程">
+          <button type="button" class="toggle" id="noClash" aria-pressed="false"><span class="sw" aria-hidden="true"></span><span data-i18n="noClash">只看不衝堂</span></button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="list" id="list"></div>
+      </div>
+      <div class="side">
+        <div class="panel lot" id="lottery"></div>
+        <div class="panel tt-panel">
+          <div class="sec-t"><h2 data-i18n="week">本週課表</h2><span class="hint" id="ttHint" data-i18n="ttHint">點空堂可查看那個時段的課</span></div>
+          <div class="tt-wrap"><div class="tt" id="tt"></div></div>
+          <div class="mine" id="mine"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<nav class="mnav" data-i18n-aria="navAria" aria-label="主要導覽">
+  <button type="button" data-mv="list" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span data-i18n="navList">課程</span></button>
+  <button type="button" data-mv="table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9h18M8 4v17M13.5 9v12"/></svg><span data-i18n="navTable">課表</span><b class="badge" id="navBadge"></b></button>
+  <button type="button" data-mv="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span data-i18n="navMe">進度</span></button>
+</nav>
+<button type="button" class="ai-fab" id="aiFab" hidden aria-haspopup="dialog" aria-expanded="false" data-i18n-aria="aiTitle" aria-label="AI 選課建議"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3"/><circle cx="12" cy="2.6" r=".9" fill="currentColor"/><rect x="4" y="6" width="16" height="12" rx="4"/><circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"/><path d="M9.5 15.5h5M2 11v3M22 11v3M8 18v2.5M16 18v2.5"/></svg></button>
+<section class="ai" id="ai" role="dialog" aria-labelledby="aiTtl" hidden>
+  <div class="ai-top"><span class="ai-ico"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3"/><circle cx="12" cy="2.6" r=".9" fill="currentColor"/><rect x="4" y="6" width="16" height="12" rx="4"/><circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"/><path d="M9.5 15.5h5M2 11v3M22 11v3M8 18v2.5M16 18v2.5"/></svg></span><span class="ai-tt"><b id="aiTtl" data-i18n="aiTitle">AI 選課建議</b><small data-i18n="aiSub">說說你想學什麼，AI 從可選的課裡幫你挑</small></span><button type="button" class="ai-x" id="aiClose" data-i18n-aria="aiClose" aria-label="關閉">✕</button></div>
+  <div class="ai-body" id="aiBody">
+            <label class="ai-l" for="aiDept" data-i18n="aiDeptL">想從哪個學系選課</label>
+            <select id="aiDept" class="dept-sel"></select>
+            <label class="ai-l" for="aiText" data-i18n="aiTextL">你的興趣或目標</label>
+            <textarea id="aiText" rows="3" data-i18n-ph="aiPh" placeholder="例如：想往資料分析發展，希望學 Python 和統計，週五不想排課"></textarea>
+            <div class="ai-act"><button type="button" class="btn" id="aiGo" data-i18n="aiGo">取得建議</button><button type="button" class="btn ghost" id="aiStop" hidden data-i18n="aiStop">停止</button><span class="hint" id="aiStatus"></span></div>
+            <div id="aiOut"></div>
+          </div>
+        </section>
+
+{{ courses|json_script:"raw-data" }}
+{{ boot|json_script:"boot-data" }}
+<script>window.NTUB_SSO=true;window.APP={csrf:"{{ csrf_token }}"};</script>
+<script src="{% static 'courses/app.js' %}"></script>
+</body>
+</html>

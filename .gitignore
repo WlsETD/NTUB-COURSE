@@ -1,0 +1,5 @@
+node_modules/
+.env
+
+# 課程講義（不放進公開 repo）
+*.pdf

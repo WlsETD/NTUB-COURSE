@@ -1,0 +1,10 @@
+# 金鑰與本機檔案不能進映像
+.env
+secrets/
+.venv/
+__pycache__/
+*.pyc
+staticfiles/
+*.log
+.firebase/
+.git/
