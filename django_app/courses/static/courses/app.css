@@ -40,6 +40,10 @@ html:lang(zh-Hant) body{word-break:keep-all;overflow-wrap:anywhere}
 .dlg-warn{margin:12px 0 0;padding:8px 10px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:13px}
 .dlg-act{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .dlg-act .btn{min-height:38px;min-width:80px}
+/* 防呆：保留是實色主按鈕，退選半透明 */
+.dlg-act .btn:not(.drop){font-weight:700}
+.dlg-act .btn.drop{opacity:.6;transition:opacity .15s}
+.dlg-act .btn.drop:hover,.dlg-act .btn.drop:focus-visible{opacity:1}
 .wrap{max-width:1240px;margin:0 auto}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
