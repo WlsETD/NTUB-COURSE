@@ -47,6 +47,13 @@ body.login .line{opacity:0;transition:opacity .3s}
 .note{margin:0;font-size:12px;color:var(--muted)}
 .skip{position:fixed;right:20px;bottom:20px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}
 [hidden]{display:none!important}
+.dev{width:100%;margin-top:6px;background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.dev-t{margin:0;font-size:13px;font-weight:700}
+.dev-t small{font-weight:400;color:var(--muted)}
+.dev-row{display:flex;gap:8px;flex-wrap:wrap}
+.dev button{border:0;border-radius:8px;padding:7px 12px;background:var(--surface);color:var(--accent);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.dev input{flex:1;min-width:0;border:0;border-radius:8px;padding:7px 10px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px}
+.dev-msg{margin:0;font-size:12.5px;color:var(--bad)}
 .mem-banner{position:fixed;top:0;left:0;right:0;z-index:5;background:var(--bad-soft);color:var(--bad);font-size:13px;font-weight:700;text-align:center;padding:6px 16px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}h1 .ch,.sub,.tiles i{opacity:1}.line{transform:none}}
 </style>
@@ -69,6 +76,17 @@ body.login .line{opacity:0;transition:opacity .3s}
     </button>
     <div class="msg" id="msg" role="alert" hidden></div>
     <p class="note">只接受 @{{ school_domain }} 學校帳號，個人 Gmail 無法登入。</p>
+    {% if dev_login %}
+    <div class="dev" id="dev">
+      <p class="dev-t">本機測試登入 <small>只有 DJANGO_DEBUG=1 才會出現，正式環境沒有</small></p>
+      <div class="dev-row">
+        <button type="button" data-dev="sckuai@ntub.edu.tw">老師：蒯思齊</button>
+        <button type="button" data-dev="11446001@ntub.edu.tw">學生：11446001</button>
+      </div>
+      <div class="dev-row"><input id="devEmail" type="email" placeholder="或輸入任一學校信箱" aria-label="測試登入信箱"><button type="button" id="devGo">登入</button></div>
+      <p class="dev-msg" id="devMsg" role="alert" hidden></p>
+    </div>
+    {% endif %}
   </div>
 </div>
 <button class="skip" id="skip" type="button">略過動畫</button>
@@ -99,6 +117,23 @@ body.login .line{opacity:0;transition:opacity .3s}
   try { skipIntro = sessionStorage.getItem("cs-skipintro") === "1"; sessionStorage.removeItem("cs-skipintro"); } catch (e) {}
   setTimeout(showLogin, reduce || skipIntro ? 0 : 2600);
   document.getElementById("skip").onclick = showLogin;
+
+  // 本機測試登入（DEBUG 才有這個區塊）：不經過 Google，直接用信箱登入
+  var dev = document.getElementById("dev");
+  if (dev) {
+    var devLogin = async function (email) {
+      var m = document.getElementById("devMsg"); m.hidden = true;
+      var r = await fetch("/dev/login/", { method: "POST", headers: { "X-CSRFToken": CSRF }, body: JSON.stringify({ email: email }) });
+      if (r.ok) { location.href = "/app/"; return; }  // 老師帳號會再被導到 /teacher/
+      var data = await r.json().catch(function () { return {}; });
+      m.textContent = data.error === "student_needs_memory_store"
+        ? "現在連的是雲端的真實資料，測試登入只能用老師帳號（避免寫入假選課）。學生請用上面的 Google 登入，或改用記憶體模式（STORE=memory）。"
+        : data.error === "not_school_account" ? "只接受 @" + SCHOOL + " 學校信箱。" : "登入失敗（" + r.status + "）";
+      m.hidden = false;
+    };
+    dev.addEventListener("click", function (e) { var b = e.target.closest("[data-dev]"); if (b) devLogin(b.dataset.dev); });
+    document.getElementById("devGo").onclick = function () { devLogin(document.getElementById("devEmail").value.trim()); };
+  }
 
   // Firebase Auth：跳出 Google 視窗，拿到 ID token 後交給 Django 驗證
   var config = JSON.parse(document.getElementById("firebase-config").textContent);

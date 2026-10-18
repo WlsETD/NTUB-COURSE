@@ -310,3 +310,12 @@ class MemoryBannerTests(Base):
         self.assertContains(self.client.get("/"), "本機記憶體模式")  # Base 用 STORE=memory
         with override_settings(STORE="firestore"):
             self.assertNotContains(self.client.get("/"), "本機記憶體模式")
+
+
+class DevPanelTests(Base):
+    def test_panel_hidden_in_production(self):
+        self.assertNotContains(self.client.get("/"), 'id="dev"')  # 測試預設 DEBUG=False
+
+    @override_settings(DEBUG=True)
+    def test_panel_shown_locally(self):
+        self.assertContains(self.client.get("/"), 'id="dev"')
