@@ -16,6 +16,7 @@
 <style>body{margin:0}[hidden]{display:none!important}:root{--accent:#c23a64;--accent-soft:#fbe1ea;--accent-fg:#fff}</style>
 </head>
 <body>
+{% if memory_store %}<div class="mem-banner" role="status">本機記憶體模式（STORE=memory）：這裡的資料不是雲端的真實資料，重開伺服器就會清空</div>{% endif %}
 <div class="wrap tch">
   <header class="top">
     <div>

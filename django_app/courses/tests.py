@@ -303,3 +303,10 @@ class AutoRequiredSyncTests(Base):
         self.post("/api/selection/", {"major": "406", "grade": 2, "cls": "資管二年甲班", "sel": auto[1:], "auto": auto})  # 退掉一門必修
         self.client.get("/app/")
         self.assertEqual(self.saved()["sel"], auto[1:])
+
+
+class MemoryBannerTests(Base):
+    def test_banner_only_in_memory_mode(self):
+        self.assertContains(self.client.get("/"), "本機記憶體模式")  # Base 用 STORE=memory
+        with override_settings(STORE="firestore"):
+            self.assertNotContains(self.client.get("/"), "本機記憶體模式")

@@ -16,6 +16,7 @@
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
+{% if memory_store %}<div class="mem-banner" role="status">本機記憶體模式（STORE=memory）：這裡的資料不是雲端的真實資料，重開伺服器就會清空</div>{% endif %}
 <div class="gate" id="gate" hidden role="dialog" aria-modal="true" aria-labelledby="gTitle">
   <div class="g-stage" id="gStage">
     <div class="g-intro" id="gIntro">

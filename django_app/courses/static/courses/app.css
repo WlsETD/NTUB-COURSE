@@ -45,6 +45,8 @@ html:lang(zh-Hant) body{word-break:keep-all;overflow-wrap:anywhere}
 .dlg-act .btn.drop{opacity:.6;transition:opacity .15s}
 .dlg-act .btn.drop:hover,.dlg-act .btn.drop:focus-visible{opacity:1}
 .wrap{max-width:1240px;margin:0 auto}
+/* STORE=memory 的提示（只會出現在本機測試） */
+.mem-banner{max-width:1240px;margin:0 auto 12px;background:var(--bad-soft);color:var(--bad);border-radius:10px;font-size:13px;font-weight:700;text-align:center;padding:8px 14px}
 /* 老師端（teacher.html）：每門課一張卡片，下面列出選課學生 */
 .tch{max-width:900px}
 .tch-course{margin-bottom:12px}
