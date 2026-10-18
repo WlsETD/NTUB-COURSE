@@ -9,7 +9,7 @@
 import json
 
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 from firebase_admin import auth as fb_auth
@@ -55,6 +55,26 @@ def create_session(request):
     request.session.flush()  # 換一個新的 session，避免沿用舊的
     request.session.update(user)
     return JsonResponse({"ok": True, "name": user["name"] or user["email"]})
+
+
+@require_POST
+def dev_login(request):
+    """本機測試用：不經過 Google，直接用指定的學校信箱登入（可以在瀏覽器 console 呼叫）。
+
+    只有 DJANGO_DEBUG=1 才能用；正式環境（Cloud Run 設 DJANGO_DEBUG=0）一律 404。
+    """
+    if not settings.DEBUG:
+        raise Http404
+    try:
+        body = json.loads(request.body or b"{}")
+    except ValueError:
+        body = {}
+    email = str(body.get("email") or "").strip().lower()
+    if not email.endswith("@" + settings.SCHOOL_DOMAIN):
+        return JsonResponse({"error": "not_school_account", "email": email}, status=403)
+    request.session.flush()
+    request.session.update({"uid": "dev:" + email, "email": email, "name": str(body.get("name") or "")[:40]})
+    return JsonResponse({"ok": True, "email": email})
 
 
 @require_POST

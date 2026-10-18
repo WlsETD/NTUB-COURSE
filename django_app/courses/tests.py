@@ -210,3 +210,18 @@ class TeacherTests(Base):
     def test_extra_teacher(self):
         from courses.teachers import teacher_names
         self.assertEqual(teacher_names("demo@ntub.edu.tw"), ["林俊杰"])
+
+
+class DevLoginTests(Base):
+    def dev(self, email):
+        return self.post("/dev/login/", {"email": email, "name": "測試"})
+
+    def test_off_in_production(self):
+        self.assertEqual(self.dev("sckuai@ntub.edu.tw").status_code, 404)  # 測試預設 DEBUG=False
+        self.assertEqual(self.client.get("/teacher/").status_code, 302)
+
+    @override_settings(DEBUG=True)
+    def test_debug_login(self):
+        self.assertEqual(self.dev("me@gmail.com").status_code, 403)
+        self.assertEqual(self.dev("sckuai@ntub.edu.tw").status_code, 200)
+        self.assertEqual(self.client.get("/teacher/").status_code, 200)
