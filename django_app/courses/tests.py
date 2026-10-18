@@ -177,3 +177,36 @@ class StudentBootTests(Base):
     def test_boot_without_student_id(self):
         self.login()
         self.assertIsNone(self.client.get("/app/").context["boot"]["student"])
+
+
+class TeacherTests(Base):
+    TEACHER = {**SCHOOL_CLAIMS, "uid": "t1", "email": "sckuai@ntub.edu.tw", "name": "蒯思齊"}
+
+    def test_roster(self):
+        from courses.teachers import teacher_names
+        self.assertEqual(teacher_names("SCKuai@ntub.edu.tw"), ["蒯思齊"])
+        self.assertEqual(teacher_names("shli@ntub.edu.tw"), ["李淑華", "李興漢"])  # 同一個信箱對到兩位老師
+        self.assertEqual(teacher_names("s1@ntub.edu.tw"), [])
+
+    def test_teacher_sees_students(self):
+        from courses.teachers import courses_taught
+        cid = courses_taught(["蒯思齊"], store.get_store().list_courses())[0]["id"]
+        self.login({**SCHOOL_CLAIMS, "email": "11446001@ntub.edu.tw"})
+        self.post("/api/selection/", {"major": "406", "grade": 2, "cls": "資管二年甲班", "sel": [cid]})
+        self.client.post("/auth/logout/")
+        self.login(self.TEACHER)
+        self.assertRedirects(self.client.get("/app/"), "/teacher/", fetch_redirect_response=False)
+        r = self.client.get("/teacher/")
+        self.assertContains(r, "11446001")
+        self.assertContains(r, "測試學生")
+        course = next(c for c in r.context["courses"] if c["id"] == cid)
+        self.assertEqual([s["sid"] for s in course["students"]], ["11446001"])
+
+    def test_student_cannot_open_teacher_page(self):
+        self.login()
+        self.assertRedirects(self.client.get("/teacher/"), "/app/", fetch_redirect_response=False)
+
+    @override_settings(TEACHER_EXTRA="demo@ntub.edu.tw=林俊杰")
+    def test_extra_teacher(self):
+        from courses.teachers import teacher_names
+        self.assertEqual(teacher_names("demo@ntub.edu.tw"), ["林俊杰"])

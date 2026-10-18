@@ -81,6 +81,8 @@ STORAGES = {
 
 # ---------- 學校 ----------
 SCHOOL_DOMAIN = os.getenv("SCHOOL_DOMAIN", "ntub.edu.tw")
+# 額外的老師帳號（data/teachers.txt 以外，例如示範用）：信箱=姓名,信箱=姓名
+TEACHER_EXTRA = os.getenv("TEACHER_EXTRA", "")
 
 # ---------- Firebase ----------
 # 前端登入用的設定（Firebase 主控台 → 專案設定 → 一般 → 你的應用程式）。這些值本來就會出現在網頁上，不是密碼。

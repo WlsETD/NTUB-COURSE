@@ -65,6 +65,7 @@ $vars = [ordered]@{
     OPENAI_MODEL_FAST           = $envs["OPENAI_MODEL_FAST"]
     AI_RATE_LIMIT               = $envs["AI_RATE_LIMIT"]
     SCHOOL_DOMAIN               = $envs["SCHOOL_DOMAIN"]
+    TEACHER_EXTRA               = $envs["TEACHER_EXTRA"]
 }
 $yaml = [IO.Path]::GetTempFileName()
 try {

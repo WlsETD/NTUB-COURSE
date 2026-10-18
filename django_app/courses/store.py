@@ -2,7 +2,7 @@
 
 Firestore 結構
 - courses/{課程 id}：課程資料（課名、老師、時間、名額…），另有 registered = 透過本系統登記的人數
-- students/{Firebase uid}：email、major、grade、cls、sel（已選課程 id）、auto（自動帶入的必修）、updatedAt
+- students/{Firebase uid}：email、name、major、grade、cls、sel（已選課程 id）、auto（自動帶入的必修）、updatedAt
 
 所有讀寫都由 Django 伺服器用 Admin SDK 進行，瀏覽器不直接連 Firestore（見 firestore.rules）。
 STORE=memory 時改用記憶體，給自動測試使用。
@@ -77,7 +77,7 @@ class FirestoreStore:
         snap = self._db().collection("students").document(uid).get()
         return snap.to_dict() if snap.exists else None
 
-    def save_selection(self, uid, email, data):
+    def save_selection(self, uid, email, data, name=""):
         from firebase_admin import firestore
 
         client = self._db()
@@ -94,11 +94,22 @@ class FirestoreStore:
                 transaction.update(courses.document(cid), {"registered": firestore.Increment(1)})
             for cid in old - new:
                 transaction.update(courses.document(cid), {"registered": firestore.Increment(-1)})
-            transaction.set(student_ref, {**data, "email": email, "updatedAt": firestore.SERVER_TIMESTAMP}, merge=True)
+            transaction.set(student_ref, {**data, "email": email, "name": name, "updatedAt": firestore.SERVER_TIMESTAMP}, merge=True)
 
         txn(client.transaction())
         cache.delete(COURSE_CACHE_KEY)
         return data
+
+    def students_in_courses(self, course_ids):
+        """選了其中任何一門課的學生（老師端用）。array_contains_any 一次最多 30 個值，所以分批查。"""
+        from google.cloud.firestore_v1.base_query import FieldFilter
+
+        ids, out = list(course_ids), {}
+        col = self._db().collection("students")
+        for i in range(0, len(ids), 30):
+            for snap in col.where(filter=FieldFilter("sel", "array_contains_any", ids[i:i + 30])).stream():
+                out[snap.id] = {**snap.to_dict(), "uid": snap.id}
+        return list(out.values())
 
     def seed_courses(self, rows, reset_counts=False):
         client = self._db()
@@ -142,7 +153,7 @@ class MemoryStore:
         s = self.students.get(uid)
         return dict(s) if s else None
 
-    def save_selection(self, uid, email, data):
+    def save_selection(self, uid, email, data, name=""):
         with self.lock:
             old = set((self.students.get(uid) or {}).get("sel") or [])
             new = set(data["sel"])
@@ -150,8 +161,12 @@ class MemoryStore:
                 self.courses[cid]["registered"] += 1
             for cid in old - new:
                 self.courses[cid]["registered"] -= 1
-            self.students[uid] = {**data, "email": email}
+            self.students[uid] = {**data, "email": email, "name": name}
         return data
+
+    def students_in_courses(self, course_ids):
+        ids = set(course_ids)
+        return [{**s, "uid": uid} for uid, s in self.students.items() if ids & set(s.get("sel") or [])]
 
     def seed_courses(self, rows, reset_counts=False):
         for order, row in enumerate(rows):

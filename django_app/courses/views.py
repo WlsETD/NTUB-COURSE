@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from django.core.cache import cache
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.decorators import school_login_required
@@ -11,6 +11,7 @@ from accounts.decorators import school_login_required
 from . import ai
 from .store import clean_selection, course_rows_for, get_store
 from .student_id import student_from_email
+from .teachers import courses_taught, teacher_names
 
 
 def _json_body(request):
@@ -29,6 +30,8 @@ def _me(request):
 def app_page(request):
     """選課主畫面：課程資料與學生上次存的選課一起放進頁面。"""
     me = _me(request)
+    if teacher_names(me["email"]):
+        return redirect("courses:teacher")
     saved = get_store().get_student(me["uid"])
     sel = (saved or {}).get("sel") or []
     boot = {
@@ -41,6 +44,33 @@ def app_page(request):
         "ai": ai.enabled(),
     }
     return render(request, "courses/app.html", {"courses": course_rows_for(sel), "boot": boot})
+
+
+@school_login_required
+def teacher_page(request):
+    """老師端：自己開的課，以及每門課透過本系統選課的學生。"""
+    me = _me(request)
+    names = teacher_names(me["email"])
+    if not names:
+        return redirect("courses:app")
+    store = get_store()
+    courses = courses_taught(names, store.list_courses())
+    ids = {c["id"] for c in courses}
+    by_course = {cid: [] for cid in ids}
+    for s in store.students_in_courses(ids):
+        email = s.get("email") or ""
+        info = student_from_email(email)
+        row = {"sid": info["sid"] if info else email.split("@")[0], "name": s.get("name") or "", "email": email, "cls": s.get("cls") or ""}
+        for cid in ids & set(s.get("sel") or []):
+            by_course[cid].append(row)
+    for c in courses:
+        c["students"] = sorted(by_course[c["id"]], key=lambda r: r["sid"])
+        c["slot_text"] = ai.slot_text(c["slots"])
+    return render(request, "courses/teacher.html", {
+        "teacher": "、".join(names),
+        "courses": courses,
+        "total": sum(len(c["students"]) for c in courses),
+    })
 
 
 @require_GET
@@ -57,7 +87,7 @@ def api_selection(request):
     me = _me(request)
     valid = {c["id"] for c in get_store().list_courses()}
     data = clean_selection(_json_body(request), valid)
-    get_store().save_selection(me["uid"], me["email"], data)
+    get_store().save_selection(me["uid"], me["email"], data, me["name"])
     return JsonResponse({"ok": True, "saved": data})
 
 

@@ -104,6 +104,11 @@ uv run python manage.py runserver
 
 畫面上的「已選人數」＝ `enr` ＋ `registered`。加選、退選在同一個 transaction 裡更新 `registered`，多人同時操作也不會算錯。
 
+## 學生與老師
+
+- **學生**：從信箱的學號判斷學制、科系、年級（`courses/student_id.py`），自動帶入本班必修。
+- **老師**：信箱在 `data/teachers.txt` 裡就是老師，登入後進 `/teacher/`，看到自己開的課（用姓名對應課程資料的授課老師）和每門課透過本系統選課的學生（學號、姓名、班級、信箱）。示範時可以用 `.env` 的 `TEACHER_EXTRA` 再加帳號。
+
 ## 安全設計
 
 - **學校帳號檢查在伺服器**：Google 登入視窗的 `hd` 參數只是提示，學生仍可換帳號，所以 `accounts/views.py` 會用 Firebase Admin SDK 驗證 token，並確認是 Google 登入、信箱已驗證、結尾是 `@ntub.edu.tw`。

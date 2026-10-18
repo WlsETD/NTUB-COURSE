@@ -1,0 +1,60 @@
+{% load static %}<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NTUB COURSE · 教師端</title>
+<link rel="icon" href="{% static 'courses/icons/favicon.ico' %}" sizes="any">
+<link rel="icon" href="{% static 'courses/icons/icon-small.svg' %}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{% static 'courses/icons/apple-touch-icon.png' %}">
+<link rel="manifest" href="{% static 'courses/icons/site.webmanifest' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preload" href="{% static 'courses/fonts/cubic11.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'courses/app.css' %}">
+<!-- 老師端沒有載入 app.js，主題色直接用預設的玫瑰色 -->
+<style>body{margin:0}[hidden]{display:none!important}:root{--accent:#c23a64;--accent-soft:#fbe1ea;--accent-fg:#fff}</style>
+</head>
+<body>
+<div class="wrap tch">
+  <header class="top">
+    <div>
+      <p class="hello">歡迎，{{ teacher }} 老師</p>
+      <h1><span class="bw">NTUB</span> <span class="bw">COURSE</span></h1>
+      <p class="sub"><span class="sub-seg">教師端</span> · <span class="sub-seg">115 學年度第 1 學期</span> · <span class="sub-seg">開課 {{ courses|length }} 門、選課 {{ total }} 人次</span></p>
+    </div>
+    <button type="button" class="btn ghost" id="logout">登出</button>
+  </header>
+
+  {% for c in courses %}
+  <section class="panel tch-course">
+    <div class="tch-head">
+      <div>
+        <h2>{{ c.name }} <span class="tch-type">{{ c.type }}</span></h2>
+        <p class="tch-meta"><span class="nw">{{ c.cls }}</span> · <span class="nw">{{ c.slot_text }}</span> · <span class="nw">{{ c.room }}</span> · <span class="nw">{{ c.credits }} 學分</span> · <span class="nw">課號 {{ c.code }}</span></p>
+      </div>
+      <div class="tch-count"><b>{{ c.students|length }}</b><small>人選課 · 名額 {{ c.cap }}</small></div>
+    </div>
+    {% if c.students %}
+    <ol class="tch-list">
+      {% for s in c.students %}
+      <li><span class="tch-sid">{{ s.sid }}</span><b>{{ s.name|default:"—" }}</b><span class="tch-cls">{{ s.cls }}</span><span class="tch-mail">{{ s.email }}</span></li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="tch-empty">目前還沒有學生透過本系統選這門課。</p>
+    {% endif %}
+  </section>
+  {% empty %}
+  <section class="panel tch-course"><p class="tch-empty">本學期（115-1）的課程資料裡沒有找到「{{ teacher }}」老師開的課。</p></section>
+  {% endfor %}
+  <p class="tch-note">只列出透過本系統選課的學生；課程資料為 2026/10/08 北商全校課程查詢的快照。</p>
+</div>
+<script>
+  document.getElementById("logout").addEventListener("click", function () {
+    fetch("/auth/logout/", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" }, credentials: "same-origin" })
+      .catch(function () {}).then(function () { location.href = "/"; });
+  });
+</script>
+</body>
+</html>

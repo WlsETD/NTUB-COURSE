@@ -45,6 +45,27 @@ html:lang(zh-Hant) body{word-break:keep-all;overflow-wrap:anywhere}
 .dlg-act .btn.drop{opacity:.6;transition:opacity .15s}
 .dlg-act .btn.drop:hover,.dlg-act .btn.drop:focus-visible{opacity:1}
 .wrap{max-width:1240px;margin:0 auto}
+/* 老師端（teacher.html）：每門課一張卡片，下面列出選課學生 */
+.tch{max-width:900px}
+.tch-course{margin-bottom:12px}
+.tch-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.tch-head h2{margin:0;font-size:17px;font-weight:700}
+.tch-type{font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:1px 8px;margin-left:4px;vertical-align:2px}
+.tch-meta{margin:4px 0 0;color:var(--muted);font-size:13px}
+.tch-meta .nw{white-space:nowrap}
+.tch-count{text-align:right;flex:none}
+.tch-count b{display:block;font-family:var(--font-mono);font-size:26px;font-weight:500;line-height:1.1;color:var(--accent)}
+.tch-count small{color:var(--muted);font-size:12px;white-space:nowrap}
+.tch-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px}
+.tch-list li{display:grid;grid-template-columns:96px 88px minmax(0,1fr) minmax(0,1.4fr);gap:10px;align-items:center;background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:13px}
+.tch-sid{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.tch-cls,.tch-mail{color:var(--muted);overflow-wrap:anywhere}
+.tch-empty{margin:12px 0 0;color:var(--muted);font-size:13px}
+.tch-note{color:var(--muted);font-size:12px;margin:16px 0 0}
+@media (max-width:720px), (max-width:1366px) and (pointer:coarse){
+  .tch-list li{grid-template-columns:auto minmax(0,1fr);row-gap:2px}
+  .tch-cls,.tch-mail{grid-column:1 / -1}
+}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
