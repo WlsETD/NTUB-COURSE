@@ -52,13 +52,25 @@
   {% empty %}
   <section class="panel tch-course"><p class="tch-empty">本學期（115-1）的課程資料裡沒有找到「{{ teacher }}」老師開的課。</p></section>
   {% endfor %}
-  <p class="tch-note">只列出透過本系統選課的學生；課程資料為 2026/10/08 北商全校課程查詢的快照。</p>
+  <p class="tch-note">只列出透過本系統選課的學生，每 15 秒自動更新（最後更新 {% now "H:i:s" %}）；課程資料為 2026/10/08 北商全校課程查詢的快照。</p>
 </div>
 <script>
-  document.getElementById("logout").addEventListener("click", function () {
+  // 用事件委派：自動更新會換掉整個 .wrap，按鈕也是新的
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("#logout")) return;
     fetch("/auth/logout/", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" }, credentials: "same-origin" })
       .catch(function () {}).then(function () { location.href = "/"; });
   });
+  // 每 15 秒重新抓一次頁面，學生選課後老師不用手動重新整理；分頁在背景時不抓
+  setInterval(function () {
+    if (document.hidden) return;
+    fetch(location.href, { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (html) {
+        var fresh = html && new DOMParser().parseFromString(html, "text/html").querySelector(".wrap.tch");
+        if (fresh) document.querySelector(".wrap.tch").innerHTML = fresh.innerHTML; // 登入過期時抓到的是登入頁，就不換
+      }).catch(function () {});
+  }, 15000);
 </script>
 </body>
 </html>
