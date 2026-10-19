@@ -1108,7 +1108,7 @@ section.show{animation:rise .35s cubic-bezier(.2,.7,.2,1)}
     else if(t.id==="resetLot"){resetLottery()}
     else if(t.id==="noClash"){state.noClash=!state.noClash;t.setAttribute("aria-pressed",state.noClash);renderList(true);toast(tr(state.noClash?"ncOn":"ncOff"))}
     else if(t.dataset.src){state.src=t.dataset.src;renderChips();renderList(true)}
-    else if(t.dataset.cls){if(t.dataset.cls!==state.cls&&!state.drawing){snapshot();state.cls=t.dataset.cls;resetFor("dSwitch")}}
+    else if(t.dataset.cls){if(t.dataset.cls!==state.cls&&!state.drawing){state.cls=t.dataset.cls;state.popAll=true;render()}}
     else if(t.dataset.mv){setView(t.dataset.mv)}
     else if(t.id==="qClear"){state.q="";$("q").value="";renderList(true);$("q").focus()}
     else if(t.id==="qAll"){state.src="all";renderChips();renderList(true)}

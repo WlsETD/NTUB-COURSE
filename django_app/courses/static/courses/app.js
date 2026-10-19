@@ -488,7 +488,7 @@
     else if(t.dataset.blk){openDropDlg(t.dataset.blk)}
     else if(t.dataset.slot){pickSlot(t.dataset.slot.split(",").map(Number))}
     else if(t.id==="slotClear"){state.slot=null;renderChips();renderList(true);renderTT()}
-    else if(t.dataset.cls){if(t.dataset.cls!==state.cls&&!state.drawing){snapshot();state.cls=t.dataset.cls;resetFor("dSwitch")}}
+    else if(t.dataset.cls){if(t.dataset.cls!==state.cls&&!state.drawing){state.cls=t.dataset.cls;state.popAll=true;render()}}
     else if(t.dataset.mv){setView(t.dataset.mv)}
     else if(t.id==="qClear"){state.q="";$("q").value="";renderList(true);$("q").focus()}
     else if(t.id==="qAll"){state.src="all";renderChips();renderList(true)}
