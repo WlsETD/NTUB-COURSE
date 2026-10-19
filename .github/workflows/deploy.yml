@@ -1,0 +1,52 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'django_app/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ntub-90ecf
+          export_default_credentials: true
+
+      - name: Build and deploy to Cloud Run
+        run: |
+          cd django_app
+          gcloud run deploy ntub-course \
+            --source . \
+            --platform managed \
+            --region asia-east1 \
+            --project ntub-90ecf \
+            --allow-unauthenticated \
+            --max-instances 3 \
+            --set-env-vars \
+              DJANGO_DEBUG=0,\
+              DJANGO_ALLOWED_HOSTS=ntub-course-*.asia-east1.run.app,\
+              DJANGO_CSRF_TRUSTED_ORIGINS=https://ntub-course-*.asia-east1.run.app,\
+              FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }},\
+              FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }},\
+              FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},\
+              FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }},\
+              OPENAI_MODEL=${{ secrets.OPENAI_MODEL }},\
+              OPENAI_MODEL_FAST=${{ secrets.OPENAI_MODEL_FAST }},\
+              AI_RATE_LIMIT=20,\
+              SCHOOL_DOMAIN=ntub.edu.tw,\
+              TEACHER_EXTRA=${{ secrets.TEACHER_EXTRA }}
+
+      - name: Verify deployment
+        run: |
+          SERVICE_URL=$(gcloud run services describe ntub-course --region asia-east1 --format='value(status.url)')
+          echo "✓ 部署完成: $SERVICE_URL"
+          curl -s -I "$SERVICE_URL" | head -5
