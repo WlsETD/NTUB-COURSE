@@ -133,6 +133,8 @@
   if(HOME){state.major=HOME.dept;state.grade=HOME.grade}
   function homeDept(){return HOME?HOME.dept:state.major}
   function homeGrade(){return HOME?HOME.grade:state.grade}
+  // 自動帶入的必修只看學號（科系＋年級）決定的本班；班級選單只是瀏覽，不影響帶入與存檔
+  function homeCls(){return classesFor(homeDept(),homeGrade())[0]||""}
   function done(){return []}
   // graduation: NTUB requires at least 128 credits; credits earned in earlier terms are sample figures
   var GRAD_NAME={req:"必修",ele:"選修",ge:"通識"};
@@ -153,7 +155,6 @@
   (function(sv){if(!sv||DEPTS.indexOf(sv.major)<0)return;
     if(HOME){if(sv.major!==HOME.dept||+sv.grade!==HOME.grade)return} // 存檔是別的科系或年級：以學號為準重新帶入必修
     else{state.major=sv.major;state.grade=Math.min(4,Math.max(1,+sv.grade||1))}
-    var cl=classesFor(homeDept(),homeGrade());state.cls=cl.indexOf(sv.cls)>=0?sv.cls:(cl[0]||"");
     state.sel=(sv.sel||[]).filter(function(id){return byIdOK(id)});state.auto=(sv.auto||[]).filter(function(id){return byIdOK(id)})})(BOOT.saved);
 
   function seatsLeft(c){return c.cap-c.enr-(state.sel.indexOf(c.id)>=0?1:0)+0}
@@ -462,7 +463,7 @@
   // 選課有變動就存到 Firestore（停 0.6 秒後送出，連續點很多次只會存一次）
   // 跟「資料庫裡真正存的」比，不是跟載入時的畫面比：第一次登入、或學號改了本系而重新帶入的必修，載入後就會立刻存檔
   var lastSaved=BOOT.saved?JSON.stringify({major:BOOT.saved.major,grade:BOOT.saved.grade,cls:BOOT.saved.cls,sel:BOOT.saved.sel||[],auto:BOOT.saved.auto||[]}):"",saveT=null,saving=false;
-  function selPayload(){return {major:homeDept(),grade:homeGrade(),cls:state.cls,sel:state.sel,auto:state.auto}}
+  function selPayload(){return {major:homeDept(),grade:homeGrade(),cls:homeCls(),sel:state.sel,auto:state.auto}}
   function queueSave(){if(JSON.stringify(selPayload())===lastSaved)return;clearTimeout(saveT);saveT=setTimeout(saveNow,600)}
   async function saveNow(){
     if(saving){queueSave();return}
