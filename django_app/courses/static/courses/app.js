@@ -7,7 +7,7 @@
   var RAW=JSON.parse(document.getElementById("raw-data").textContent);
   var BOOT=JSON.parse(document.getElementById("boot-data").textContent);
   function byIdOK(id){return COURSES.some(function(c){return c.id===id})}
-  var COURSES=RAW.map(function(r){return {id:r[0],dept:r[1],src:r[2],cls:r[3],grade:r[4],code:r[5],name:r[6],teacher:r[7],slots:r[8],room:r[9],credits:r[10],cap:r[11],enr:r[12],type:r[13],cat:r[14],icon:r[15],pre:[]}});
+  var COURSES=RAW.map(function(r){return {id:r[0],dept:r[1],src:r[2],cls:r[3],grade:r[4],code:r[5],name:r[6],teacher:r[7],slots:r[8],room:r[9],credits:r[10],cap:r[11],enr:r[12],type:r[13],cat:r[14],icon:r[15],pre:[],approvalKind:r[16]||""}});
   var ICONS={
     code:'<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>',
     integral:'<path d="M16 4.5c-1.5-1.2-4.5-1-4.5 2.5v10c0 3.5-3 3.7-4.5 2.5"/><path d="M15 15h4"/>',
@@ -57,11 +57,12 @@
   try{var sl=localStorage.getItem("cs-lang");if(sl==="en"||sl==="zh")LANG=sl}catch(e){}
   var STR={
     zh:{title:"NTUB COURSE",sub:"國立臺北商業大學 · 115 學年度第 1 學期加退選 · 四技日間部",palette:"主題色",custom:"自訂顏色",gradeAria:"選擇年級",
+      swapOpen:"安全換課",swapIntro:"先選替代課，再確認換課",swapHint:"只列出完整時段相同、不與其餘課程衝堂且有名額的課。確認成功前，原課保持不變。",swapOld:"目前已選",swapPick:"同時段替代課程",swapChoose:"選擇替代課程（{0} 門）",swapOption:"{0} · {1} · {2} 學分 · 剩 {3} 位",swapEmpty:"目前沒有符合條件的替代課程，原課會繼續保留。",swapCancel:"保留原課",swapConfirm:"確認換課",swapSaving:"正在確認與儲存…",swapNew:"將換成",swapCredits:"換課後共 {0} 學分（原為 {1} 學分）",swapRequired:"原課是自動帶入的必修；換成其他課不代表已滿足原本的必修要求。",swapOtherDept:"這是外系課程，請確認學校是否開放你跨系選修。",swapHighCredits:"換課後超過 {0} 學分，超出部分不予計算。",swapSuccess:"已將「{0}」換成「{1}」",swapFailed:"換課未完成，請檢查連線後再試。",swapChanged:"你的選課已變動，請重新整理後再試。",swapFull:"替代課程已額滿，本次未退選原課，請選其他課程。",swapUnavailable:"這門課目前不符合換課條件，請重新整理後再試。",swapUnknown:"無法確認換課結果，請重新整理確認目前課表，再進行其他操作。",swapDisclaimer:"這是本系統的選課調整；實際選課資格與學校選課結果仍以校方系統為準。",
       search:"搜尋課名、老師或課號",noClash:"只看不衝堂",week:"本週課表",ttHint:"點空堂可查看那個時段的課",slotChip:"時段：{0}",slotClearT:"清除時段篩選",cellPick:"{0}：查看這個時段的課",slotEmpty:"{0}沒有可選的課。",slotToast:"{0}有 {1} 門課可選",navList:"課程",navTable:"課表",navMe:"進度",navAria:"主要導覽",
       themeSystem:"跟隨系統",themeLight:"淺色",themeDark:"深色",themeAria:"切換配色",langBtn:"EN",langAria:"Switch to English",langToast:"已切換為中文",
       done:"已修過此課程",minGrade:"{0}以上才能選",drawing:"抽籤進行中",noSeat:"抽籤後已無空缺名額",clash:"與「{0}」衝堂",pre:"尚未修畢先修課 {0}",overMax:"加選後超過學分上限 {0}",
       cantAdd:"無法加選：{0}",addedAfter:"已加選「{0}」，名額 {1}/{2}",regOver:"已登記「{0}」，{1}/{2} 超額，截止後抽籤",regOk:"已登記「{0}」，{1}/{2}，截止後直接錄取",
-      dropReq:"已取消必修「{0}」，畢業前仍需補修",dropped:"已退選「{0}」",grpSel:"已選課程",idLine:"{0} · {1}{2} · 學號 {3}",idNoData:"{0} · 學號 {1} · 目前只有四技日間部的課程資料",prog4:"四技",prog3:"二技",homeTag:"（本系）",deptViewAria:"查看其他科系的課程",viewDept:"正在查看{0}的課程，你的選課與必修不變",viewHome:"回到本系課程",ttQ:"要退選這門課嗎？",ttKeep:"保留",ttReqWarn:"這是本班必修，退選後畢業前仍需補修。",ttBlkAria:"{0}，點選可退選",lowCredit:"提醒：目前學分低於下限 {0}",
+      dropReq:"已取消必修「{0}」，畢業前仍需補修",dropped:"已退選「{0}」",grpSel:"已選課程",idLine:"{0} · {1}{2} · 學號 {3}",idNoData:"{0} · 學號 {1} · 目前只有四技日間部的課程資料",prog4:"四技",prog3:"二技",homeTag:"（本系）",deptViewAria:"查看其他科系的課程",viewDept:"正在查看{0}的課程，你的選課與必修不變",viewHome:"回到本系課程",ttQ:"想調整這門課嗎？",ttKeep:"保留",ttReqWarn:"這是本班必修，退選後畢業前仍需補修。",ttBlkAria:"{0}，點選可退選或安全換課",lowCredit:"提醒：目前學分低於下限 {0}",
       gradTitle:"畢業學分進度",total:"合計 {0} / {1}",gap:"差 {0}",reached:"已達成",had:"已修",now:"本學期",
       crTitle:"本學期學分",crMax:"/ 上限 {0}",selCount:"已選 {0} 門",stNeed:"尚差 {0} 學分達下限",stMax:"已達學分上限",stLeft:"可再選 {0} 學分",
       phase1:"階段一 · 登記中，可超額登記，截止後抽籤",phase3:"階段三 · 加退選，剩餘名額先搶先贏",
@@ -75,11 +76,12 @@
       lotDone:"抽籤完成，{0} 門未中籤，可在加退選補選其他課",lotAll:"抽籤完成，全部錄取",backReg:"已回到登記階段",switched:"已切換為{0}，已自動帶入 {1} 門必修",
       stOverCap:"已選 {0} 學分，超出上限的 {1} 學分不予計算",tNoCount:"不計學分",tPartial:"計入 {0}/{1}",regExcess:"已登記「{0}」，超出 {1} 學分上限的部分不予計算",miniEx:"+{0} 不計",settings:"設定",gSub:"國立臺北商業大學 · 115-1 四技日間部",gSkip:"略過動畫",gH:"登入 NTUB COURSE",gDesc:"使用學校帳號（@ntub.edu.tw）登入，不需要另外註冊。",gLogin:"以學校帳號登入",gNote:"身分以你目前登入 Claude 的帳號 email 確認",gChecking:"確認身分中…",gNotSchool:"目前登入的帳號是 {0}，不是 @ntub.edu.tw 學校信箱，無法以學生身分登入。",gNoEmail:"這個預覽頁面無法讀取帳號 email，因此無法驗證學校信箱。正式上線版本會改用 Google 學校帳號登入。",gDemo:"以示範模式進入（未驗證身分）",gWelcome:"歡迎，{0}",gWelcomeDemo:"示範模式",gLogout:"登出",gDemoChip:"示範模式（未驗證）",bqTitle:"選課基本資料",bqHint:"個人可加選資格請以學校系統為準",bqItem:"項目",bqLimit:"上限",bqSel:"已選",bq1:"學分上下限",bq2:"總學分－已選學分",bq3:"跨部互選學分數－已選學分",bq4:"興趣選修科目數－已選",bq5:"成績優異可加選科目數－已選",bq6:"轉學轉系生可加選科目數－已選",bq7:"輔系雙主修可加選科目數－已選",bq8:"申請學程可加選科目數－已選",bq9:"研究所下修可加選科目數－已選",aiClose:"關閉",fontL:"字體",fontCubic:"俐方體11號（點陣）",fontNoto:"Noto Sans TC",fontToast:"字體：{0}",aiTitle:"AI 選課建議",aiSub:"說說你想學什麼，AI 從可選的課裡幫你挑",aiDeptL:"想從哪個學系選課",aiTextL:"你的興趣或目標",aiPh:"例如：想往資料分析發展，希望學 Python 和統計，週五不想排課",aiGo:"取得建議",aiStop:"停止",aiThinking:"AI 思考中，通常需要 10 到 40 秒…",aiNeed:"請先寫下你的興趣或目標",aiAddAll:"全部加入",aiAdd:"加入",aiAdded:"已加入",aiClash:"與已選課程衝堂",aiNone:"這個學系目前沒有可選又不衝堂的課",aiErr:"這次沒拿到建議，請稍後再試",aiDenied:"AI 服務目前無法使用（伺服器尚未設定 OpenAI 金鑰或額度不足）",saveErr:"選課沒有存到伺服器，請檢查網路；下次變動時會再試一次",saved:"已自動儲存",aiBusy:"使用太頻繁了，請稍等一下再試",aiDisc:"建議由 AI 產生，請自行確認是否符合系上規定",aiOther:"外系",aiAuto:"自動判斷（依你的描述）",aiClassify:"正在判斷和你描述相關的學系…",aiPicking:"已篩選：{0}，正在挑課…",aiChip:"AI 篩選：{0}",aiClearT:"清除 AI 篩選，只看本系課程",grpAi:"AI 篩選的外系課程 · {0}",aiFiltered:"AI 判斷相關學系：{0}。課程清單已加入這些學系的課。",deptAria:"選擇學系",srcAll:"全部",srcDept:"本系",srcGe:"通識",srcPe:"體育",srcMil:"軍訓",grpCls:"本班 · {0}",grpSame:"本系其他班級",grpViewSame:"{0}",grpViewLow:"{0} · 低年級",grpLowDept:"本系低年級 · 學分與本學期合併計算",grpGe:"通識課程",grpPe:"體育",grpMil:"軍訓",autoNote2:"{0} · 本班必修 {1} 門已自動帶入，不需要可自行退選",autoNote0:"{0} · 本班這學期沒有可自動帶入的必修，請自行選課",dSwitch0:"已切換為{0}，本班這學期沒有可自動帶入的必修",undo:"復原",undone:"已復原先前的選課",clearQ:"清除搜尋",emptyQ:"「{0}」沒有符合的課程。",searchAll:"搜尋全部類別",srcNote:"開課資料取自北商全校課程查詢（115-1 四技日間部，2026/10/08 擷取）",termBreak:"本學期計入：必修 {0} · 選修 {1} · 通識 {2}",gradNeed:"畢業最低 {0} 學分",dSwitch:"已切換為{0}，本班必修 {1} 門已自動帶入",language:"語言",appearance:"外觀",grpMine:"{0}課程",grpLower:"低年級課程 · 學分與本學期合併計算",grpDone:"已修過 {0} 門",grpShow:"展開",grpHide:"收合",deadline:"登記截止：10 月 15 日 17:00，截止後由系統抽籤並公告結果",ncOn:"只顯示和目前課表不衝堂的課",ncOff:"顯示全部課程",accentToast:"主題色：{0}",themeToast:"配色：{0}",sep:"、",slot:"週{0} {1}–{2}節",slot1:"週{0} 第{1}節",day:"週{0}"},
     en:{title:"NTUB COURSE",sub:"National Taipei University of Business · Fall 2026 add/drop · 4-year day program",palette:"Theme",custom:"Custom color",gradeAria:"Select year",
+      swapOpen:"Safe swap",swapIntro:"Choose a replacement, then confirm",swapHint:"Only courses with exactly the same periods, no other timetable conflicts and available seats are listed. Your original course stays until the swap succeeds.",swapOld:"Currently selected",swapPick:"Courses at the same time",swapChoose:"Choose a replacement ({0} courses)",swapOption:"{0} · {1} · {2} cr · {3} seats left",swapEmpty:"No suitable replacement is available. Your original course stays selected.",swapCancel:"Keep original",swapConfirm:"Confirm swap",swapSaving:"Checking and saving…",swapNew:"Replace with",swapCredits:"After swap: {0} credits (currently {1})",swapRequired:"The original is an auto-added required course. Replacing it does not fulfill that requirement.",swapOtherDept:"This course is offered by another department. Check your cross-department eligibility.",swapHighCredits:"After the swap, credits above {0} will not count.",swapSuccess:"Replaced {0} with {1}",swapFailed:"The swap did not complete. Check your connection and try again.",swapChanged:"Your selection has changed. Reload before trying again.",swapFull:"The replacement is now full. Your original course was not dropped; choose another course.",swapUnavailable:"This course is no longer eligible for a swap. Reload and try again.",swapUnknown:"The swap result could not be confirmed. Reload to check your timetable before making more changes.",swapDisclaimer:"This updates your selection in this app. Eligibility and official enrollment results are determined by the school system.",
       search:"Search course, instructor or code",noClash:"Hide conflicts",week:"Weekly timetable",ttHint:"Tap a free slot to see courses at that time",slotChip:"Time: {0}",slotClearT:"Clear the time filter",cellPick:"{0}: show courses at this time",slotEmpty:"No courses available at {0}.",slotToast:"{1} courses at {0}",navList:"Courses",navTable:"Timetable",navMe:"Progress",navAria:"Main navigation",
       themeSystem:"System",themeLight:"Light",themeDark:"Dark",themeAria:"Change appearance",langBtn:"中文",langAria:"切換為中文",langToast:"Switched to English",
       done:"Already completed",minGrade:"Open to {0} and above",drawing:"Lottery in progress",noSeat:"No seats left after the lottery",clash:"Conflicts with {0}",pre:"Prerequisite not met: {0}",overMax:"Would exceed the {0}-credit limit",
       cantAdd:"Can't add: {0}",addedAfter:"Added {0} ({1}/{2})",regOver:"Registered for {0}. {1}/{2} is over capacity, so a lottery runs after the deadline",regOk:"Registered for {0} ({1}/{2}). You'll be admitted after the deadline",
-      dropReq:"Removed required course {0}. You still need it to graduate",dropped:"Dropped {0}",grpSel:"Selected",idLine:"{0} · {1}, {2} · ID {3}",idNoData:"{0} · ID {1} · Only 4-year day program courses are available",prog4:"4-year program",prog3:"2-year program",homeTag:" (my dept)",deptViewAria:"Browse other departments' courses",viewDept:"Browsing {0}. Your courses and required courses stay the same",viewHome:"Back to your department",ttQ:"Drop this course?",ttKeep:"Keep",ttReqWarn:"This is a required course for your class. You'll still need to take it before you graduate.",ttBlkAria:"{0}. Select to drop",lowCredit:"Heads up: you're below the {0}-credit minimum",
+      dropReq:"Removed required course {0}. You still need it to graduate",dropped:"Dropped {0}",grpSel:"Selected",idLine:"{0} · {1}, {2} · ID {3}",idNoData:"{0} · ID {1} · Only 4-year day program courses are available",prog4:"4-year program",prog3:"2-year program",homeTag:" (my dept)",deptViewAria:"Browse other departments' courses",viewDept:"Browsing {0}. Your courses and required courses stay the same",viewHome:"Back to your department",ttQ:"Change this course?",ttKeep:"Keep",ttReqWarn:"This is a required course for your class. You'll still need to take it before you graduate.",ttBlkAria:"{0}. Select to drop or swap",lowCredit:"Heads up: you're below the {0}-credit minimum",
       gradTitle:"Graduation progress",total:"Total {0} / {1}",gap:"{0} to go",reached:"Done",had:"Completed",now:"This term",
       crTitle:"Credits this term",crMax:"/ max {0}",selCount:"{0} courses",stNeed:"{0} more credits to reach the minimum",stMax:"At the credit limit",stLeft:"{0} credits available",
       phase1:"Phase 1 · Registration open. Over-capacity courses go to a lottery",phase3:"Phase 3 · Add/drop. Remaining seats are first come, first served",
@@ -93,6 +95,7 @@
       lotDone:"Lottery done. {0} course(s) not drawn; pick others during add/drop",lotAll:"Lottery done. You're admitted to everything",backReg:"Back to registration",switched:"Switched to {0}. {1} required courses added",
       stOverCap:"{0} credits selected. The {1} over the limit won't count",tNoCount:"Not counted",tPartial:"{0}/{1} cr counted",regExcess:"Registered for {0}. Credits over the {1}-credit limit won't count",miniEx:"+{0} not counted",settings:"Settings",gSub:"National Taipei University of Business · Fall 2026 · 4-year day program",gSkip:"Skip intro",gH:"Sign in to NTUB COURSE",gDesc:"Sign in with your school account (@ntub.edu.tw). No separate sign-up needed.",gLogin:"Sign in with school account",gNote:"Your identity is checked against the email of the Claude account you are signed in with",gChecking:"Checking your account…",gNotSchool:"You are signed in as {0}, which is not an @ntub.edu.tw school address, so you can't sign in as a student.",gNoEmail:"This preview can't read your account email, so it can't verify a school address. The deployed version signs in with Google school accounts.",gDemo:"Enter demo mode (identity not verified)",gWelcome:"Welcome, {0}",gWelcomeDemo:"Demo mode",gLogout:"Sign out",gDemoChip:"Demo mode (not verified)",bqTitle:"Registration quotas",bqHint:"Personal eligibility follows the school system",bqItem:"Item",bqLimit:"Limit",bqSel:"Selected",bq1:"Credit range",bq2:"Total credits − selected",bq3:"Cross-division credits − selected",bq4:"Interest electives − selected",bq5:"Extra courses for top grades − selected",bq6:"Extra courses for transfer students − selected",bq7:"Extra courses for minor / double major − selected",bq8:"Extra courses for programs − selected",bq9:"Graduate courses taken early − selected",aiClose:"Close",fontL:"Font",fontCubic:"Cubic 11 (pixel)",fontNoto:"Noto Sans TC",fontToast:"Font: {0}",aiTitle:"AI course advisor",aiSub:"Tell it what you want to learn and it picks from courses you can take",aiDeptL:"Department to choose from",aiTextL:"Your interests or goals",aiPh:"e.g. I want to go into data analysis, learn Python and statistics, and keep Fridays free",aiGo:"Get suggestions",aiStop:"Stop",aiThinking:"Thinking. This usually takes 10 to 40 seconds…",aiNeed:"Write down your interests or goals first",aiAddAll:"Add all",aiAdd:"Add",aiAdded:"Added",aiClash:"Conflicts with your timetable",aiNone:"No courses in this department fit your timetable right now",aiErr:"Couldn't get suggestions this time. Try again later",aiDenied:"The AI service is unavailable (OpenAI key not set or out of credit)",saveErr:"Couldn't save to the server. Check your connection; it will retry on your next change",saved:"Saved automatically",aiBusy:"Too many requests. Wait a moment and try again",aiDisc:"Suggestions are AI-generated. Check them against your department's rules",aiOther:"Other dept.",aiAuto:"Auto (from your description)",aiClassify:"Working out which departments match your description…",aiPicking:"Filtered to {0}. Picking courses…",aiChip:"AI filter: {0}",aiClearT:"Clear the AI filter and show only your department",grpAi:"Courses from other departments picked by AI · {0}",aiFiltered:"Matching departments: {0}. Their courses are now in the list.",deptAria:"Select department",srcAll:"All",srcDept:"My dept.",srcGe:"Gen Ed",srcPe:"PE",srcMil:"Military",grpCls:"My class · {0}",grpSame:"Other classes in my dept.",grpViewSame:"{0}",grpViewLow:"{0} · lower years",grpLowDept:"Lower-year courses · credits count toward this term",grpGe:"General education",grpPe:"Physical education",grpMil:"Military training",autoNote2:"{0} · Required courses for your class were added ({1}). Drop any you don't need.",autoNote0:"{0} · No required courses to add for your class this term. Pick freely.",dSwitch0:"Switched to {0}. No required courses to add this term",undo:"Undo",undone:"Previous selection restored",clearQ:"Clear search",emptyQ:"No courses match \u201c{0}\u201d.",searchAll:"Search all categories",srcNote:"Offerings from the NTUB course search (Fall 2026, 4-year day program, captured 2026-10-08). Course names and instructors are shown as published.",termBreak:"Counted this term: required {0} · elective {1} · gen ed {2}",gradNeed:"{0} credits to graduate",dSwitch:"Switched to {0}. Required courses for your class added ({1})",language:"Language",appearance:"Appearance",grpMine:"{0} courses",grpLower:"Lower-year courses · credits count toward this term",grpDone:"Completed ({0})",grpShow:"Show",grpHide:"Hide",deadline:"Registration closes Oct 15 at 17:00. The system then runs the lottery and posts results",ncOn:"Showing only courses that fit your timetable",ncOff:"Showing all courses",accentToast:"Theme: {0}",themeToast:"Appearance: {0}",sep:", ",slot:"{0} P{1}–{2}",slot1:"{0} P{1}",day:"{0}"}
   };
+  Object.assign(STR.zh,window.REQUEST_STRINGS.zh);Object.assign(STR.en,window.REQUEST_STRINGS.en);
   function tr(){return t.apply(null,arguments)}
   function t(k){var s=(STR[LANG][k]!=null?STR[LANG][k]:STR.zh[k]),a=arguments;return String(s).replace(/\{(\d)\}/g,function(_,i){return a[+i+1]})}
   var DAYS_L={zh:["","一","二","三","四","五","六","日"],en:["","Mon","Tue","Wed","Thu","Fri","Sat","Sun"]};
@@ -126,6 +129,9 @@
     return out}
   function initialSel(){return autoReq()}
   var state={major:"406",grade:2,cls:"",sel:[],auto:[],wait:[],src:"dept",q:"",hover:null,justAdded:null,prevCr:null,first:true,popAll:false,noClash:false,showDone:false,aiFilter:[],slot:null,phase:"register",drawing:false,results:null};
+  var swapPending=false,swapOld=null,swapSnapshot=[],swapStale=false;
+  var applications=BOOT.applications||[],applicationPending=false,syncing=false,selectionRevision=BOOT.saved&&BOOT.saved.revision||0;
+  state.approved=BOOT.saved&&BOOT.saved.approved||{};
   try{var sm=localStorage.getItem("cs-major");if(DEPTS.indexOf(sm)>=0)state.major=sm}catch(e){}
   // 學號判斷出的本系與年級（伺服器解析 email，見 student_id.py）。有的話：班級與自動帶入的必修都以本系為準，
   // 學系選單只用來「查看」其他科系的課（state.major = 正在看的科系），年級按鈕隱藏
@@ -171,19 +177,144 @@
   function countMap(){var left=MAX,m={};state.sel.forEach(function(id){var c=byId[id].credits,k=Math.max(0,Math.min(c,left));m[id]=k;left-=k});return m}
   function counted(){return Math.min(credits(),MAX)}
   function credits(){return state.sel.reduce(function(s,id){return s+byId[id].credits},0)}
-  function clashWith(c){
-    for(var i=0;i<state.sel.length;i++){var o=byId[state.sel[i]];if(o.id!==c.id&&overlap(c,o))return o}
+  function clashWith(c,ignore){
+    for(var i=0;i<state.sel.length;i++){var o=byId[state.sel[i]];if(o.id!==c.id&&o.id!==ignore&&overlap(c,o))return o}
     return null}
   function missingPre(c){return c.pre.filter(function(p){return done().indexOf(p)<0})}
-  function check(c){
+  function requiredApplication(c){return ["add","cross_dept","prerequisite"].indexOf(c.approvalKind)<0||c.approvalKind==="cross_dept"&&(c.src!=="dept"||c.dept===homeDept())?"":c.approvalKind}
+  function check(c,ignore){
     if(isDone(c))return {ok:false,why:t("done"),done:true};
     if(state.drawing)return {ok:false,why:t("drawing")};
     if(state.phase==="drawn"&&enrolled(c)>=c.cap)return {ok:false,why:t("noSeat")};
-    var cl=clashWith(c);
+    var cl=clashWith(c,ignore);
     if(cl)return {ok:false,why:t("clash",nm(cl))};
+    var required=requiredApplication(c);
+    if(required)return {ok:false,why:t("rRequired_"+required)};
     var mp=missingPre(c);
     if(mp.length)return {ok:false,why:t("pre",mp.map(function(p){return byId[p]?nm(byId[p]):p}).join(t("sep")))};
     return {ok:true}}
+
+  function selectedActions(id){return '<div class="selection-actions"><button type="button" class="btn ghost" data-swap="'+id+'">'+t("swapOpen")+'</button><button type="button" class="btn drop" data-drop="'+id+'">'+t("bDrop")+'</button></div>'}
+  function approvedTag(id){var grant=state.approved[id];return grant&&state.sel.indexOf(id)>=0?'<span class="approval-tag" data-approved="'+id+'" title="'+esc(t("rKind_"+grant.kind))+'">'+t("rApproved")+'</span>':''}
+  function pendingApplication(id){return applications.some(function(app){return app.course_id===id&&app.status==="pending"})}
+  function renderApplications(){
+    var pick=$("applicationCourse"),value=pick.value;
+    pick.innerHTML='<option value="">'+t("rChoose")+'</option>'+COURSES.filter(function(c){return state.sel.indexOf(c.id)<0&&c.teacher&&c.teacher!=="待聘"}).map(function(c){
+      return '<option value="'+c.id+'">'+esc(c.name+' · '+c.teacher+' · '+c.code)+'</option>'}).join("");
+    if(byId[value]&&state.sel.indexOf(value)<0)pick.value=value;
+    updateApplicationKind();
+    $("applicationCount").textContent=applications.filter(function(app){return app.status==="pending"}).length||"";
+    $("applicationHistory").innerHTML=applications.length?applications.map(function(app){
+      var date=new Date(app.created_at).toLocaleString(LANG==="en"?"en-US":"zh-TW",{timeZone:"Asia/Taipei"});
+      return '<article class="application-record"><div class="application-top"><b>'+esc(app.course_name)+'</b><span class="application-status '+app.status+'">'+t("rStatus_"+app.status)+'</span></div><small>'+t("rKind_"+app.kind)+' · '+esc(app.teacher)+'</small><p class="application-reason">'+esc(app.reason)+'</p><small>'+t("rSubmittedAt")+'：'+esc(date)+'</small>'+
+        (app.status!=="pending"?'<p class="application-reply">'+t("rReply")+'：'+esc(app.note||t("rNoReply"))+'</p>':'')+
+        (app.status==="approved"&&state.sel.indexOf(app.course_id)<0?'<p class="hint">'+t("rApprovedRemoved")+'</p>':'')+'</article>'}).join(""):'<p class="hint">'+t("rEmpty")+'</p>'}
+  function updateApplicationKind(){
+    var c=byId[$("applicationCourse").value],cross=$("applicationKind").querySelector('[value="cross_dept"]');
+    cross.disabled=!c||c.src!=="dept"||c.dept===homeDept();
+    if(cross.disabled&&$("applicationKind").value==="cross_dept")$("applicationKind").value="add"}
+  function openApplication(id){
+    if(applicationPending)return;
+    $("applicationPanel").open=true;renderApplications();$("applicationCourse").value=id;updateApplicationKind();
+    var c=byId[id];$("applicationKind").value=requiredApplication(c)||(missingPre(c).length?"prerequisite":c&&c.src==="dept"&&c.dept!==homeDept()?"cross_dept":"add");
+    $("applicationMessage").hidden=true;$("applicationPanel").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});$("applicationKind").focus({preventScroll:true})}
+  async function submitApplication(e){
+    e.preventDefault();if(applicationPending)return;
+    var cid=$("applicationCourse").value,kind=$("applicationKind").value,reason=$("applicationReason").value.trim(),message=$("applicationMessage");
+    if(!cid||!reason){message.textContent=t("rInvalid");message.hidden=false;return}
+    applicationPending=true;$("applicationFields").disabled=true;$("applicationSubmit").textContent=t("rSubmitting");message.hidden=true;
+    try{
+      if(saving&&!await savePromise)throw {code:"unsaved"};
+      if(!await saveNow())throw {code:"unsaved"};
+      var result=await apiPost("/api/applications/",{course_id:cid,kind:kind,reason:reason},AbortSignal.timeout(30000));
+      applications=[result.application].concat(applications.filter(function(app){return app.id!==result.application.id}));
+      $("applicationReason").value="";message.textContent=t("rSubmitted");render()}
+    catch(error){message.textContent=t(error.code==="not_cross_dept"?"rCrossOnly":error.code==="already_selected"?"rAlreadySelected":error.code==="no_teacher"?"rNoTeacher":error.code==="invalid_application"?"rInvalid":"rFailed")}
+    finally{applicationPending=false;$("applicationFields").disabled=false;$("applicationSubmit").textContent=t("rSubmit");message.hidden=false}}
+  function adoptServerSelection(saved){
+    if(!saved)return;
+    clearTimeout(saveT);state.sel=(saved.sel||[]).filter(byIdOK);state.auto=(saved.auto||[]).filter(byIdOK);state.approved=saved.approved||{};
+    selectionRevision=saved.revision||0;state.hover=null;
+    if(!HOME&&DEPTS.indexOf(saved.major)>=0){state.major=saved.major;state.grade=saved.grade}
+    lastSaved=JSON.stringify(selPayload());render()}
+  async function syncAccount(manual){
+    if(syncing||saving||swapPending||applicationPending||(!manual&&(document.hidden||document.querySelector('dialog[open]'))))return;
+    if(JSON.stringify(selPayload())!==lastSaved){if(!manual||!await saveNow())return}
+    syncing=true;
+    try{
+      var response=await fetch("/api/me/",{credentials:"same-origin",cache:"no-store",signal:AbortSignal.timeout(10000)});
+      if(response.status===401){location.href="/";return}if(!response.ok)throw new Error("sync");
+      var data=await response.json();applications=data.applications||applications;$("acctE").textContent=data.email;
+      if(data.saved&&(data.saved.revision||0)!==selectionRevision&&!saving&&!swapPending&&!applicationPending&&JSON.stringify(selPayload())===lastSaved){adoptServerSelection(data.saved);toast(t("rSynced"))}
+      else{renderApplications();renderList(false)}}
+    catch(error){if(manual)toast(t("rSyncFailed"))}finally{syncing=false}}
+  function samePeriods(a,b){
+    function key(c){var slots={};c.slots.forEach(function(s){for(var p=s[1];p<=s[2];p++)slots[s[0]*100+p]=true});return Object.keys(slots).sort().join(",")}
+    var times=key(a);return !!times&&times===key(b)}
+  function swapCandidates(id){
+    var old=byId[id],grade=homeGrade();
+    return COURSES.filter(function(c){return state.sel.indexOf(c.id)<0&&samePeriods(old,c)&&enrolled(c)<c.cap&&
+      (c.src==="dept"?c.grade<=grade:c.grade===0||c.grade===grade)&&check(c,id).ok})
+      .sort(function(a,b){return (Math.abs(a.credits-old.credits)-Math.abs(b.credits-old.credits))||
+        ((a.dept===homeDept()?0:1)-(b.dept===homeDept()?0:1))||a.name.localeCompare(b.name)||a.code.localeCompare(b.code)})}
+  function openSwapDlg(id){
+    var old=byId[id],dlg=$("swapDlg");if(!old||state.drawing||swapPending||state.sel.indexOf(id)<0)return;
+    swapOld=id;swapSnapshot=state.sel.slice();swapStale=false;
+    $("swapOldName").textContent=nm(old);
+    $("swapOldMeta").innerHTML=esc(tc(old))+' · '+slotText(old)+' · '+t("cr",old.credits);
+    var candidates=swapCandidates(id),pick=$("swapPick");
+    pick.innerHTML='<option value="">'+t("swapChoose",candidates.length)+'</option>'+candidates.map(function(c){
+      return '<option value="'+c.id+'">'+esc(t("swapOption",nm(c),tc(c),c.credits,c.cap-enrolled(c)))+'</option>'}).join("");
+    pick.disabled=!candidates.length;$("swapEmpty").hidden=!!candidates.length;$("swapError").hidden=true;
+    updateSwapPreview();dlg.showModal();pick.focus()}
+  function updateSwapPreview(){
+    var old=byId[swapOld],next=byId[$("swapPick").value],preview=$("swapPreview"),warnings=[];
+    preview.hidden=!next;$("swapConfirm").disabled=!next||swapPending||swapStale;
+    if(next){
+      var total=credits()-old.credits+next.credits;
+      preview.innerHTML='<small>'+t("swapNew")+'</small><b>'+esc(nm(next))+'</b><p class="dlg-meta">'+esc(tc(next))+' · '+slotText(next)+' · '+esc(rm(next))+' · '+t("cr",next.credits)+'</p><p class="swap-credits">'+t("swapCredits",total,credits())+'</p>';
+      if(state.auto.indexOf(swapOld)>=0)warnings.push(t("swapRequired"));
+      if(next.src==="dept"&&next.dept!==homeDept())warnings.push(t("swapOtherDept"));
+      if(total<MIN)warnings.push(t("lowCredit",MIN));
+      if(total>MAX)warnings.push(t("swapHighCredits",MAX))}
+    $("swapWarnings").hidden=!warnings.length;
+    $("swapWarnings").innerHTML=warnings.map(function(w){return '<p>'+esc(w)+'</p>'}).join("")}
+  function swapControls(busy){
+    $("swapPick").disabled=busy||$("swapPick").options.length<2;$("swapCancel").disabled=busy;
+    $("swapConfirm").textContent=t(busy?"swapSaving":"swapConfirm");updateSwapPreview()}
+  async function confirmSwap(e){
+    e.preventDefault();var oldId=swapOld,newId=$("swapPick").value;
+    if(swapPending||swapStale||!newId)return;
+    if(JSON.stringify(swapSnapshot)!==JSON.stringify(state.sel)){swapStale=true;$("swapError").textContent=t("swapChanged");$("swapError").hidden=false;updateSwapPreview();return}
+    swapPending=true;clearTimeout(saveT);swapControls(true);$("swapError").hidden=true;
+    try{
+      // 先等先前的自動儲存完成，避免舊請求在換課後把舊課表寫回去。
+      if(saving&&!await savePromise)throw {code:"unsaved"};
+      if(!await saveNow(true))throw {code:"unsaved"};
+      var expected=state.sel.slice(),replacement=expected.map(function(id){return id===oldId?newId:id}),result;
+      try{result=await apiPost("/api/selection/swap/",{old:oldId,new:newId,expected:expected},AbortSignal.timeout(30000))}
+      catch(error){
+        if(error.code!=="network"&&error.code!=="cancelled")throw error;
+        // 回應遺失不代表交易失敗；先讀回結果，不能用舊課表覆寫可能已完成的換課。
+        var response;try{response=await fetch("/api/me/",{credentials:"same-origin",cache:"no-store",signal:AbortSignal.timeout(10000)})}catch(ignored){throw {code:"unknown"}}
+        if(!response.ok)throw {code:"unknown"};
+        var me;try{me=await response.json()}catch(ignored){throw {code:"unknown"}}var saved=me.saved;
+        if(saved&&JSON.stringify(saved.sel)===JSON.stringify(replacement))result={saved:saved};
+        else if(saved&&JSON.stringify(saved.sel)===JSON.stringify(expected))throw {code:"network"};
+        else throw {code:"selection_changed"}}
+      if(!result.saved||!Array.isArray(result.saved.sel))throw {code:"unknown"};
+      state.sel=result.saved.sel;state.auto=result.saved.auto||state.auto;state.approved=result.saved.approved||{};selectionRevision=result.saved.revision||selectionRevision;state.hover=null;state.justAdded=newId;
+      lastSaved=JSON.stringify(selPayload());$("swapDlg").close();render();toast(t("swapSuccess",nm(byId[oldId]),nm(byId[newId])))}
+    catch(error){
+      var key=error.code==="selection_changed"?"swapChanged":error.code==="no_seats"?"swapFull":error.code==="unknown"?"swapUnknown":
+        ["different_time","ineligible_grade","course_conflict","course_unavailable"].indexOf(error.code)>=0?"swapUnavailable":"swapFailed";
+      swapStale=error.code==="selection_changed"||error.code==="unknown";
+      if(error.code==="no_seats"){
+        byId[newId].enr=byId[newId].cap;
+        var pick=$("swapPick"),option=pick.querySelector('option[value="'+newId+'"]');if(option)option.remove();pick.value="";
+        pick.options[0].textContent=t("swapChoose",pick.options.length-1);$("swapEmpty").hidden=pick.options.length>1}
+      $("swapError").textContent=t(key);$("swapError").hidden=false}
+    finally{swapPending=false;swapControls(false)}}
 
   function toast(msg,undo){var t=$("toast");t.textContent=msg;t.classList.toggle("act",!!undo);
     if(undo){var b=document.createElement("button");b.type="button";b.className="toast-undo";b.textContent=tr("undo");b.onclick=function(){t.classList.remove("on","act");undo()};t.appendChild(b)}
@@ -269,7 +400,7 @@
     var L=$("list");L.classList.remove("anim");if(anim){void L.offsetWidth;L.classList.add("anim")}
     var q=state.q.trim().toLowerCase();
     var arr=COURSES.filter(function(c){
-      if(!forGrade(c))return false;
+      if(!forGrade(c)&&state.sel.indexOf(c.id)<0)return false;
       if(state.noClash&&state.sel.indexOf(c.id)<0&&(clashWith(c)||isDone(c)))return false;
       if(state.slot){if(!atSlot(c,state.slot))return false}
       else if(state.src!=="all"&&c.src!==state.src)return false;
@@ -282,17 +413,18 @@
       var sel=state.sel.indexOf(c.id)>=0,dn=isDone(c);
       var en=enrolled(c),full=en>=c.cap,over=en>c.cap,r=check(c);
       var btn,note="";
-      if(sel)btn='<button class="btn drop" data-drop="'+c.id+'">'+t("bDrop")+'</button>';
+      if(sel)btn=selectedActions(c.id);
       else if(dn)btn='<button class="btn ghost" disabled>'+t("bDone")+'</button>';
       else if(!r.ok){btn='<button class="btn" disabled>'+t("bAdd")+'</button>';note='<div class="note">'+esc(r.why)+'</div>'}
       else btn='<button class="btn" data-add="'+c.id+'">'+(state.phase==="register"?t("bReg"):t("bAdd"))+'</button>';
+      if(!sel&&!dn&&!r.ok&&!state.drawing&&!clashWith(c)&&c.teacher&&c.teacher!=="待聘")btn='<div class="selection-actions">'+btn+'<button type="button" class="btn ghost" data-apply="'+c.id+'"'+(pendingApplication(c.id)?' disabled':'')+'>'+t(pendingApplication(c.id)?"rStatus_pending":"rTitle")+'</button></div>';
       var pct=Math.min(100,en/c.cap*100);
       var seat='<div class="seat'+(full?" full":en/c.cap>=.85?" near":"")+'" title="'+t("seatTitle")+(full?'':' · '+t("stSeats",c.cap-en))+'">'+
         '<span class="num">'+en+'<small>/'+c.cap+'</small></span>'+
         (state.phase==="register"&&en>c.cap?'<span class="st">'+t("stOver")+'</span>':full?'<span class="st">'+t("stFull")+'</span>':'')+
         '<span class="bar"><i style="width:'+pct+'%"></i></span></div>';
       return '<article class="course rk'+colIdx(c)+(sel?" sel":"")+(dn?" done":"")+'" data-id="'+c.id+'" style="--i:'+Math.min(idx,12)+'">'+
-        '<span class="c-ico k'+colIdx(c)+'">'+icon(c)+'</span><div class="c-main"><h3>'+esc(nm(c))+'<span class="'+(c.cat==="req"?"req":"lvl")+'">'+typ(c.type)+'</span>'+(sel&&state.auto.indexOf(c.id)>=0?'<span class="auto">'+t("tAuto")+'</span>':'')+(sel?cntTag(c):'')+(!sel&&state.auto.indexOf(c.id)>=0?'<span class="auto off">'+t("tAutoOff")+'</span>':'')+'</h3>'+
+        '<span class="c-ico k'+colIdx(c)+'">'+icon(c)+'</span><div class="c-main"><h3>'+esc(nm(c))+'<span class="'+(c.cat==="req"?"req":"lvl")+'">'+typ(c.type)+'</span>'+(sel&&state.auto.indexOf(c.id)>=0?'<span class="auto">'+t("tAuto")+'</span>':'')+(sel?cntTag(c):'')+approvedTag(c.id)+(!sel&&state.auto.indexOf(c.id)>=0?'<span class="auto off">'+t("tAutoOff")+'</span>':'')+'</h3>'+
         '<div class="meta"><span class="cls-tag">'+esc(clsShort(c))+'</span> '+esc(tc(c))+' · <span class="nw">'+slotText(c)+'</span> · <span class="nw">'+esc(rm(c))+'</span> · <span class="nw">'+t("cr",c.credits)+'</span></div>'+note+'</div>'+
         seat+btn+'</article>'}
     // 已選的課固定在最上面一組；其餘依序：my class, other classes of my year, lower years of my department, then general education, PE and military training
@@ -320,13 +452,13 @@
     state.sel.forEach(function(id){
       var c=byId[id];
       var pop=(state.first||state.popAll||id===state.justAdded)?" pop":"";
-      c.slots.forEach(function(s){h+='<button type="button" class="blk k'+colIdx(c)+pop+'" data-cid="'+id+'" data-blk="'+id+'" aria-label="'+esc(t("ttBlkAria",nm(c)))+'" style="grid-column:'+(s[0]+1)+';grid-row:'+(s[1]+1)+' / '+(s[2]+2)+'"><b>'+icon(c,"ico-s")+esc(nm(c))+'</b><span>'+esc(rm(c))+'</span></button>'})});
+      c.slots.forEach(function(s){h+='<button type="button" class="blk k'+colIdx(c)+pop+'" data-cid="'+id+'" data-blk="'+id+'" aria-label="'+esc(t("ttBlkAria",nm(c)))+'" style="grid-column:'+(s[0]+1)+';grid-row:'+(s[1]+1)+' / '+(s[2]+2)+'"><b>'+icon(c,"ico-s")+esc(nm(c))+'</b><span>'+esc(rm(c))+'</span>'+approvedTag(id)+'</button>'})});
     if(state.hover){
       var hc=byId[state.hover];if(isDone(hc))hc=null}
     if(state.hover&&hc){var clash=!!clashWith(hc)&&state.sel.indexOf(hc.id)<0;
       if(state.sel.indexOf(hc.id)<0)hc.slots.forEach(function(s){h+='<div class="blk ghost '+(clash?"clash":"")+'" style="grid-column:'+(s[0]+1)+';grid-row:'+(s[1]+1)+' / '+(s[2]+2)+'"><b>'+esc(nm(hc))+'</b><span>'+t(clash?"gClash":"gPrev")+'</span></div>'})}
     $("tt").innerHTML=h;
-    var rows=state.sel.map(function(id){var c=byId[id];return '<div class="row'+(id===state.justAdded||state.popAll?" pop":"")+'" data-cid="'+id+'"><div><span class="m-ico k'+colIdx(c)+'">'+icon(c)+'</span><b>'+esc(nm(c))+'</b>'+(state.auto.indexOf(id)>=0?' <span class="auto">'+t("tAutoS")+'</span>':'')+cntTag(c)+' <small>'+t("cr",c.credits)+' · '+slotText(c)+'</small></div><button class="btn drop" data-drop="'+id+'">'+t("bDrop")+'</button></div>'}).join("");
+    var rows=state.sel.map(function(id){var c=byId[id];return '<div class="row'+(id===state.justAdded||state.popAll?" pop":"")+'" data-cid="'+id+'"><div><span class="m-ico k'+colIdx(c)+'">'+icon(c)+'</span><b>'+esc(nm(c))+'</b>'+(state.auto.indexOf(id)>=0?' <span class="auto">'+t("tAutoS")+'</span>':'')+cntTag(c)+approvedTag(id)+' <small>'+t("cr",c.credits)+' · '+slotText(c)+'</small></div>'+selectedActions(id)+'</div>'}).join("");
     rows+=state.wait.map(function(id){var c=byId[id];return '<div class="row'+(id===state.justAdded?" pop":"")+'" data-cid="'+id+'"><div><b>'+esc(c.name)+'</b> <small>候補中</small></div><button class="btn ghost" data-leave="'+id+'">取消</button></div>'}).join("");
     $("mine").innerHTML=rows||'<div class="empty">'+t("mineEmpty")+'</div>'}
 
@@ -449,7 +581,7 @@
   $("aiGo").addEventListener("click",aiAsk);
   $("aiStop").addEventListener("click",function(){if(ai.ctl)ai.ctl.abort()});
   $("aiOut").addEventListener("click",function(e){if(e.target.id==="aiAll")aiAddAll()});
-  function render(){renderAI();renderGrades();renderLottery();renderSummary();renderChips();renderList(state.first||state.popAll);renderTT();state.justAdded=null;state.first=false;state.popAll=false;queueSave()}
+  function render(){renderAI();renderGrades();renderLottery();renderSummary();renderChips();renderList(state.first||state.popAll);renderTT();renderApplications();state.justAdded=null;state.first=false;state.popAll=false;queueSave()}
   // ---------- Django API ----------
   function csrf(){var m=document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);return m?decodeURIComponent(m[1]):(window.APP&&APP.csrf)||""}
   async function apiPost(url,body,signal){
@@ -458,27 +590,32 @@
     catch(e){throw {code:e&&e.name==="AbortError"?"cancelled":"network"}}
     if(r.status===401){location.href="/";throw {code:"not_signed_in"}}
     var data=await r.json().catch(function(){return {}});
-    if(!r.ok)throw {code:data.error||"error"};
+    if(!r.ok)throw {code:data.error||"error",saved:data.saved};
     return data}
   // 選課有變動就存到 Firestore（停 0.6 秒後送出，連續點很多次只會存一次）
   // 跟「資料庫裡真正存的」比，不是跟載入時的畫面比：第一次登入、或學號改了本系而重新帶入的必修，載入後就會立刻存檔
-  var lastSaved=BOOT.saved?JSON.stringify({major:BOOT.saved.major,grade:BOOT.saved.grade,cls:BOOT.saved.cls,sel:BOOT.saved.sel||[],auto:BOOT.saved.auto||[]}):"",saveT=null,saving=false;
-  function selPayload(){return {major:homeDept(),grade:homeGrade(),cls:homeCls(),sel:state.sel,auto:state.auto}}
-  function queueSave(){if(JSON.stringify(selPayload())===lastSaved)return;clearTimeout(saveT);saveT=setTimeout(saveNow,600)}
-  async function saveNow(){
-    if(saving){queueSave();return}
-    var p=selPayload(),key=JSON.stringify(p);if(key===lastSaved)return;
-    saving=true;
-    try{await apiPost("/api/selection/",p);lastSaved=key}
-    catch(e){if(e.code!=="not_signed_in")toast(tr("saveErr"))}
-    finally{saving=false}}
+  var lastSaved=BOOT.saved?JSON.stringify({major:BOOT.saved.major,grade:BOOT.saved.grade,cls:BOOT.saved.cls,sel:BOOT.saved.sel||[],auto:BOOT.saved.auto||[],revision:selectionRevision}):"",saveT=null,saving=false,savePromise=null;
+  function selPayload(){return {major:homeDept(),grade:homeGrade(),cls:homeCls(),sel:state.sel.slice(),auto:state.auto.slice(),revision:selectionRevision}}
+  function queueSave(){if(swapPending||JSON.stringify(selPayload())===lastSaved)return;clearTimeout(saveT);saveT=setTimeout(saveNow,600)}
+  function saveNow(force){
+    if(swapPending&&!force)return Promise.resolve(false);
+    if(saving){queueSave();return savePromise}
+    var p=selPayload(),key=JSON.stringify(p);if(key===lastSaved)return Promise.resolve(true);
+    saving=true;var succeeded=false;
+    savePromise=(async function(){
+      try{var result=await apiPost("/api/selection/",p);selectionRevision=result.saved.revision;state.approved=result.saved.approved||{};p.revision=selectionRevision;lastSaved=JSON.stringify(p);succeeded=true;return true}
+      catch(e){if(e.code==="selection_changed"&&e.saved){adoptServerSelection(e.saved);toast(t("rSynced"))}else if(e.code!=="not_signed_in")toast(tr("saveErr"));return false}
+      finally{saving=false;if(succeeded)queueSave()}})();
+    return savePromise}
   // 關掉分頁前還沒存的變動：用 keepalive 送出，頁面關閉後請求仍會完成
-  window.addEventListener("pagehide",function(){var p=selPayload();if(JSON.stringify(p)===lastSaved)return;
+  window.addEventListener("pagehide",function(){if(swapPending)return;var p=selPayload();if(JSON.stringify(p)===lastSaved)return;
     try{fetch("/api/selection/",{method:"POST",keepalive:true,credentials:"same-origin",headers:{"Content-Type":"application/json","X-CSRFToken":csrf()},body:JSON.stringify(p)})}catch(e){}});
 
   document.addEventListener("click",function(e){
     var t=e.target.closest("button");if(!t)return;
     if(t.dataset.add)add(t.dataset.add);
+    else if(t.dataset.apply)openApplication(t.dataset.apply);
+    else if(t.dataset.swap)openSwapDlg(t.dataset.swap);
     else if(t.dataset.drop)drop(t.dataset.drop);
     else if(t.dataset.leave)leaveWait(t.dataset.leave);
     else if(t.dataset.grade){setGrade(+t.dataset.grade)}
@@ -502,7 +639,16 @@
     $("ttDlgM").innerHTML=esc(c.teacher)+' · <span class="nw">'+slotText(c)+'</span> · <span class="nw">'+esc(rm(c))+'</span> · <span class="nw">'+t("cr",c.credits)+'</span>';
     $("ttDlgW").textContent=tr("ttReqWarn");$("ttDlgW").hidden=state.auto.indexOf(id)<0;
     dlg.dataset.cid=id;dlg.returnValue="";dlg.showModal()}
-  $("ttDlg").addEventListener("close",function(){var id=this.dataset.cid;if(this.returnValue==="drop"&&state.sel.indexOf(id)>=0)drop(id)});
+  $("ttDlg").addEventListener("close",function(){var id=this.dataset.cid;if(state.sel.indexOf(id)<0)return;if(this.returnValue==="drop")drop(id);else if(this.returnValue==="swap")openSwapDlg(id)});
+  $("swapPick").addEventListener("change",function(){$("swapError").hidden=true;updateSwapPreview()});
+  $("swapForm").addEventListener("submit",confirmSwap);
+  $("swapCancel").addEventListener("click",function(){if(!swapPending)$("swapDlg").close()});
+  $("swapDlg").addEventListener("cancel",function(e){if(swapPending)e.preventDefault()});
+  $("applicationCourse").addEventListener("change",updateApplicationKind);
+  $("applicationForm").addEventListener("submit",submitApplication);
+  $("applicationRefresh").addEventListener("click",function(){syncAccount(true)});
+  setInterval(function(){syncAccount(false)},15000);
+  window.addEventListener("focus",function(){syncAccount(false)});
   // 點背景關閉；點對話框本身的留白（target 也是 dialog）不算
   $("ttDlg").addEventListener("click",function(e){if(e.target!==this)return;var r=this.getBoundingClientRect();
     if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.close("keep")});
@@ -659,7 +805,7 @@
   (function(){
     // deployed behind the Google sign-in server: it already checked the @ntub.edu.tw account, so skip the preview gate
     if(window.NTUB_SSO){$("gate").hidden=true;$("acct").hidden=false;$("logoutBtn").hidden=false;
-      fetch("/api/me/",{credentials:"same-origin"}).then(function(r){if(r.status===401){location.href="/";return null}return r.json()}).then(function(u){if(u)$("acctE").textContent=u.email}).catch(function(){});return}
+      syncAccount(false);return}
     var auth=null;try{auth=sessionStorage.getItem("cs-auth")}catch(e){}
     gateText();
     if(auth){$("gate").hidden=true;$("acct").hidden=false;$("logoutBtn").hidden=false;$("acctE").textContent=auth==="demo"?tr("gDemoChip"):"";if(auth!=="demo"&&window.claude&&claude.use)claude.use("user").then(function(u){return u&&u.email()}).then(function(e){if(e)$("acctE").textContent=e}).catch(function(){});return}

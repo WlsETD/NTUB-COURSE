@@ -86,6 +86,26 @@ uv run python manage.py runserver
 
 > 用 `127.0.0.1:8000` 開啟時，記得 `127.0.0.1` 要在 Firebase 的授權網域裡；或改用 `http://localhost:8000/`。
 
+## 安全換課
+
+在已選課程旁按「安全換課」，或點課表上的課後選「安全換課」。系統會列出完整上課時段相同、符合年級、不與其他已選課衝堂且仍有名額的替代課程，優先顯示學分相近的選項。確認前可查看換後總學分，以及必修與外系選修提醒；取消不會更動選課。
+
+確認時，伺服器會重新檢查選課是否已變動，以及替代課的時段、年級、衝堂與最新名額，再以同一筆 Firestore transaction 完成替換和登記人數更新。額滿或檢查失敗時不會退掉原課；若網路回應遺失，前端會先讀回選課結果。這只調整本系統的選課資料，實際選課資格與學校登記結果仍以校方系統為準。
+
+## 特殊申請
+
+學生可在「特殊申請」區塊，或課程卡片上的「特殊申請」按鈕，選擇課程並提出「加簽」、「跨系選修」、「豁免先修」申請，填寫理由後查看審核狀態與教師回覆。豁免先修由教師依申請內容判斷；目前沒有串接學校的先修規則或成績資料。
+
+課程卡片只有在無法直接登記且可由教師核准處理時才顯示「特殊申請」按鈕，例如加選階段額滿或未滿足先修條件；衝堂、抽籤進行中或沒有授課教師時不顯示。登記階段本來允許超額登記的課程仍保留一般登記按鈕。
+
+課程可選填 `approval_kind`：`add` 為教師加簽許可制、`cross_dept` 為外系學生需核准（本系仍可直接登記）、`prerequisite` 為先修資格需人工審核／豁免。未填時沿用原規則。這些限制也會在伺服器驗證，不能經由一般儲存或安全換課跳過審核；先修類目前不會自動認定學生已修畢。
+
+教師登入 `/teacher/` 後，在「特殊申請審核」區塊只會看到自己授課課程的申請，可填寫回覆並通過或拒絕。**通過會在同一筆 Firestore transaction 中直接加入學生課表、更新登記人數及申請狀態**，課表、已選清單與教師名單會標記「申請通過」。重複送出同類待審申請或重複按通過不會重複加選；拒絕不影響選課。
+
+審核會檢查學生最新課表，衝堂時保留待審狀態。加簽可由教師核准超額加入；跨系選修與豁免先修仍須有名額。學生端每 15 秒、切回分頁或手動重新整理時同步結果，選課儲存使用版本號避免舊頁面蓋掉教師剛核准的課。學生仍可自行退選或安全換課，申請紀錄會保留。
+
+沿用既有 Firebase 設定，不需新增 `.env` 欄位或執行資料遷移；新增的集合與欄位會在送件、審核及儲存時建立。可用首頁的本機測試登入切換學生與老師；完整流程測試請另開 `STORE=memory` 伺服器，以免改動共用 Firebase 的真實資料。
+
 ## 常用指令
 
 | 指令 | 用途 |
@@ -100,7 +120,8 @@ uv run python manage.py runserver
 | 集合 | 文件 ID | 欄位 |
 |---|---|---|
 | `courses` | 課程 id（`s0`～`s747`） | name、teacher、dept、cls、grade、slots、credits、cap、enr（擷取時的已選人數）、registered（本系統登記人數）… |
-| `students` | Firebase uid | email、major、grade、cls、sel（已選課程 id）、auto（自動帶入的必修）、updatedAt |
+| `students` | Firebase uid | email、major、grade、cls、sel（已選課程 id）、auto（自動帶入的必修）、revision（選課版本）、approved（課程 id 對應申請 id 與類型）、pending_requests（待審申請索引）、updatedAt |
+| `special_requests` | 隨機申請 id | uid、email、name、cls、course_id、course_name、teacher、kind（add／cross_dept／prerequisite）、reason、status（pending／approved／rejected）、created_at、reviewed_at、reviewer、reviewer_name、note |
 
 畫面上的「已選人數」＝ `enr` ＋ `registered`。加選、退選在同一個 transaction 裡更新 `registered`，多人同時操作也不會算錯。
 

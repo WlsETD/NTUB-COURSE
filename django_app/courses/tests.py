@@ -4,12 +4,15 @@
 Firebase 的 token 驗證與 OpenAI 的回覆都用假的。
 """
 import json
+from copy import deepcopy
+from concurrent.futures import ThreadPoolExecutor
 from unittest import mock
 
 from django.core.cache import cache
 from django.test import SimpleTestCase, override_settings
 
 from courses import ai, store
+from courses.swapping import SwapError
 
 SCHOOL_CLAIMS = {"uid": "u1", "email": "s1@ntub.edu.tw", "email_verified": True, "name": "測試學生", "firebase": {"sign_in_provider": "google.com"}}
 
@@ -318,3 +321,134 @@ class DevPanelTests(Base):
     @override_settings(DEBUG=True)
     def test_panel_shown_locally(self):
         self.assertContains(self.client.get("/"), 'id="dev"')
+
+
+class CourseSwapTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.st = store.get_store()
+        template = self.st.courses["s1"]
+        for cid, slots in (("swap-old", [[1, 1, 3]]), ("swap-new", [[1, 1, 3]]), ("swap-other", [[2, 4, 5]])):
+            self.st.courses[cid] = {**template, "id": cid, "name": cid, "src": "dept", "grade": 2,
+                                    "slots": slots, "cap": 2, "registered": 0}
+        self.data = {"major": "406", "grade": 2, "cls": "資管二年甲班",
+                     "sel": ["swap-old", "swap-other"], "auto": ["swap-old"]}
+        self.st.save_selection("u1", "s1@ntub.edu.tw", self.data)
+        self.body = {"old": "swap-old", "new": "swap-new", "expected": self.data["sel"]}
+
+    def swap(self):
+        return self.post("/api/selection/swap/", self.body)
+
+    def test_swap_saves_both_changes_and_preserves_required_reminder(self):
+        self.login()
+        result = self.swap()
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json()["saved"]["sel"], ["swap-new", "swap-other"])
+        self.assertEqual(self.st.courses["swap-old"]["registered"], 0)
+        self.assertEqual(self.st.courses["swap-new"]["registered"], 1)
+        self.assertEqual(self.st.get_student("u1")["auto"], ["swap-old"])
+        self.assertEqual(self.client.get("/api/me/").json()["saved"]["sel"], ["swap-new", "swap-other"])
+
+    def test_rejected_swaps_leave_original_selection_and_counts_unchanged(self):
+        self.login()
+        changes = (
+            ({"registered": 2}, "no_seats"),
+            ({"grade": 3}, "ineligible_grade"),
+            ({"src": "ge", "grade": 4}, "ineligible_grade"),
+            ({"slots": [[1, 1, 2]]}, "different_time"),
+            ({"slots": [[1, 1, 3], [3, 1, 1]]}, "different_time"),
+            ({"slots": []}, "different_time"),
+        )
+        original = dict(self.st.courses["swap-new"])
+        for fields, error in changes:
+            with self.subTest(error=error, fields=fields):
+                self.st.courses["swap-new"] = {**original, **fields}
+                response = self.swap()
+                self.assertEqual(response.status_code, 409)
+                self.assertEqual(response.json()["error"], error)
+                self.assertEqual(self.st.get_student("u1")["sel"], self.data["sel"])
+                self.assertEqual(self.st.courses["swap-old"]["registered"], 1)
+                self.assertEqual(self.st.courses["swap-new"]["registered"], fields.get("registered", 0))
+
+    def test_split_period_blocks_are_the_same_time(self):
+        self.login()
+        self.st.courses["swap-new"]["slots"] = [[1, 2, 3], [1, 1, 1]]
+        self.assertEqual(self.swap().status_code, 200)
+
+    def test_conflict_with_another_selected_course_is_rejected(self):
+        self.login()
+        self.st.courses["swap-other"]["slots"] = [[1, 3, 4]]
+        self.assertEqual(self.swap().json()["error"], "course_conflict")
+        self.assertEqual(self.st.get_student("u1")["sel"], self.data["sel"])
+
+    def test_stale_tab_does_not_overwrite_newer_selection(self):
+        self.login()
+        self.st.save_selection("u1", "s1@ntub.edu.tw", {**self.data, "sel": ["swap-old"]})
+        self.assertEqual(self.swap().json()["error"], "selection_changed")
+        self.assertEqual(self.st.get_student("u1")["sel"], ["swap-old"])
+
+    def test_missing_course_or_repeated_swap_does_not_drop_the_original(self):
+        self.login()
+        del self.st.courses["swap-new"]
+        self.assertEqual(self.swap().json()["error"], "course_unavailable")
+        self.assertEqual(self.st.get_student("u1")["sel"], self.data["sel"])
+        self.body["new"] = "swap-old"
+        self.assertEqual(self.swap().json()["error"], "selection_changed")
+
+    def test_auth_csrf_and_payload_validation(self):
+        from django.test import Client
+        self.assertEqual(self.swap().status_code, 401)
+        self.login()
+        for payload in ({}, {**self.body, "expected": "swap-old"}, {**self.body, "new": []},
+                        {**self.body, "new": "invalid/path"}, {**self.body, "expected": [None]},
+                        {**self.body, "expected": ["x"] * 61}):
+            self.assertEqual(self.post("/api/selection/swap/", payload).status_code, 400)
+        client = Client(enforce_csrf_checks=True)
+        self.assertEqual(client.post("/api/selection/swap/", json.dumps(self.body), content_type="application/json").status_code, 403)
+        self.login({**SCHOOL_CLAIMS, "email": "sckuai@ntub.edu.tw"})
+        self.assertEqual(self.swap().status_code, 403)
+
+    def test_two_students_competing_for_one_seat_only_one_swap_succeeds(self):
+        self.st.courses["swap-new"]["cap"] = 1
+        self.st.save_selection("u2", "s2@ntub.edu.tw", self.data)
+
+        def attempt(uid):
+            try:
+                self.st.swap_course(uid, uid + "@ntub.edu.tw", "swap-old", "swap-new", self.data["sel"])
+                return "ok"
+            except SwapError as error:
+                return str(error)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            outcomes = list(executor.map(attempt, ["u1", "u2"]))
+        self.assertCountEqual(outcomes, ["ok", "no_seats"])
+        self.assertEqual(self.st.courses["swap-new"]["registered"], 1)
+        self.assertEqual(self.st.courses["swap-old"]["registered"], 1)
+
+    def test_firestore_reads_and_validates_before_any_transaction_write(self):
+        fake = mock.Mock()
+        student_ref = fake.collection.return_value.document.return_value
+        student_ref.get.return_value.exists = True
+        student_ref.get.return_value.to_dict.return_value = self.st.get_student("u1")
+        snapshots = []
+        for cid in [*self.data["sel"], "swap-new"]:
+            data = dict(self.st.courses[cid])
+            data["slots"] = store._slots_to_fs(data["slots"])
+            snapshot = mock.Mock(id=cid, exists=True)
+            snapshot.raw = data
+            snapshot.to_dict.side_effect = lambda data=data: deepcopy(data)
+            snapshots.append(snapshot)
+        fake.get_all.return_value = snapshots
+        firestore_store = store.FirestoreStore()
+        firestore_store._db = lambda: fake
+        with mock.patch("firebase_admin.firestore.transactional", side_effect=lambda func: func):
+            saved = firestore_store.swap_course("u1", "s1@ntub.edu.tw", "swap-old", "swap-new", self.data["sel"])
+            self.assertEqual(saved["sel"], ["swap-new", "swap-other"])
+            self.assertEqual(fake.transaction.return_value.update.call_count, 2)
+            fake.transaction.return_value.set.assert_called_once()
+            fake.transaction.return_value.reset_mock()
+            snapshots[-1].raw["registered"] = 2
+            with self.assertRaisesRegex(SwapError, "no_seats"):
+                firestore_store.swap_course("u1", "s1@ntub.edu.tw", "swap-old", "swap-new", self.data["sel"])
+            fake.transaction.return_value.update.assert_not_called()
+            fake.transaction.return_value.set.assert_not_called()
