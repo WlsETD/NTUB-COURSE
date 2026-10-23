@@ -13,7 +13,9 @@ from accounts.decorators import school_login_required
 
 from . import ai
 from .autoreq import default_selection
-from .store import clean_selection, course_rows_for, get_store
+from .store import MAX_SELECTED, clean_selection, course_rows_for, get_store
+from .swapping import SwapError, periods
+from .special_requests import KINDS, RequestError
 from .student_id import student_from_email
 from .teachers import courses_taught, teacher_names
 
@@ -43,8 +45,17 @@ def app_page(request):
     if student and student["dept"] and (not saved or saved.get("major") != student["dept"] or saved.get("grade") != student["grade"]):
         default = default_selection(store.list_courses(), student["dept"], student["grade"])
         if default:
-            store.save_selection(me["uid"], me["email"], default, me["name"])
-            saved = {**(saved or {}), **default}
+            approved = [cid for cid in (saved or {}).get("sel", []) if cid in ((saved or {}).get("approved") or {})]
+            if approved:
+                courses = {c["id"]: c for c in store.list_courses()}
+                approved = [cid for cid in approved if cid in courses]
+                default["sel"] = approved + [cid for cid in default["sel"] if cid not in approved
+                    and not any(periods(courses[cid]) & periods(courses[aid]) for aid in approved)]
+            try:
+                data = store.save_selection(me["uid"], me["email"], default, me["name"], (saved or {}).get("revision", 0))
+                saved = {**(saved or {}), **data}
+            except RequestError:
+                saved = store.get_student(me["uid"])
     sel = (saved or {}).get("sel") or []
     boot = {
         "email": me["email"],
@@ -52,7 +63,8 @@ def app_page(request):
         "name": me["name"] or me["email"].split("@")[0],
         # 從學號判斷的學制、科系、年級；前端用它自動帶入本系本班的必修
         "student": student,
-        "saved": {k: saved[k] for k in ("major", "grade", "cls", "sel", "auto") if k in saved} if saved else None,
+        "saved": {k: saved[k] for k in ("major", "grade", "cls", "sel", "auto", "approved", "revision") if k in saved} if saved else None,
+        "applications": store.list_applications(uid=me["uid"]),
         "ai": ai.enabled(),
     }
     return render(request, "courses/app.html", {"courses": course_rows_for(sel), "boot": boot})
@@ -70,7 +82,7 @@ def _teacher_courses(names):
         row = {"sid": info["sid"] if info else email.split("@")[0], "name": s.get("name") or "", "email": email, "cls": s.get("cls") or ""}
         for cid in ids & set(s.get("sel") or []):
             if all(r["email"] != email for r in by_course[cid]):  # 同一個信箱只列一次
-                by_course[cid].append(row)
+                by_course[cid].append({**row, "approved": cid in (s.get("approved") or {})})
     for c in courses:
         c["students"] = sorted(by_course[c["id"]], key=lambda r: r["sid"])
         c["slot_text"] = ai.slot_text(c["slots"])
@@ -84,10 +96,13 @@ def teacher_page(request):
     if not names:
         return redirect("courses:app")
     courses = _teacher_courses(names)
+    applications = get_store().list_applications(course_ids=[c["id"] for c in courses])
     return render(request, "courses/teacher.html", {
         "teacher": "、".join(names),
         "courses": courses,
         "total": sum(len(c["students"]) for c in courses),
+        "applications": applications,
+        "pending_count": sum(app["status"] == "pending" for app in applications),
     })
 
 
@@ -121,7 +136,9 @@ def teacher_export(request):
 @school_login_required
 def api_me(request):
     me = _me(request)
-    return JsonResponse({"email": me["email"], "name": me["name"], "saved": get_store().get_student(me["uid"])}, json_dumps_params={"default": str})
+    store = get_store()
+    return JsonResponse({"email": me["email"], "name": me["name"], "saved": store.get_student(me["uid"]),
+                         "applications": store.list_applications(uid=me["uid"])}, json_dumps_params={"default": str})
 
 
 @require_POST
@@ -132,9 +149,77 @@ def api_selection(request):
     if teacher_names(me["email"]):  # 老師帳號不選課，也不能寫入選課資料
         return JsonResponse({"error": "teacher_account"}, status=403)
     valid = {c["id"] for c in get_store().list_courses()}
-    data = clean_selection(_json_body(request), valid)
-    get_store().save_selection(me["uid"], me["email"], data, me["name"])
+    body = _json_body(request)
+    revision = body.get("revision")
+    if revision is not None and (type(revision) is not int or revision < 0):
+        return JsonResponse({"error": "invalid_revision"}, status=400)
+    data = clean_selection(body, valid)
+    student = student_from_email(me["email"])
+    if student and student["dept"] and (data["major"] != student["dept"] or data["grade"] != student["grade"]):
+        return JsonResponse({"error": "invalid_student_profile"}, status=400)
+    try:
+        data = get_store().save_selection(me["uid"], me["email"], data, me["name"], revision)
+    except RequestError as error:
+        return JsonResponse({"error": str(error), "saved": get_store().get_student(me["uid"])}, status=409, json_dumps_params={"default": str})
     return JsonResponse({"ok": True, "saved": data})
+
+
+@require_POST
+@school_login_required
+def api_swap(request):
+    me = _me(request)
+    if teacher_names(me["email"]):
+        return JsonResponse({"error": "teacher_account"}, status=403)
+    body = _json_body(request)
+    old_id, new_id, expected = body.get("old"), body.get("new"), body.get("expected")
+    if (not isinstance(old_id, str) or not isinstance(new_id, str) or not old_id or not new_id
+            or len(old_id) > 40 or len(new_id) > 40 or "/" in old_id or "/" in new_id or not isinstance(expected, list)
+            or len(expected) > MAX_SELECTED or any(not isinstance(cid, str) or len(cid) > 40 for cid in expected)):
+        return JsonResponse({"error": "invalid_swap"}, status=400)
+    try:
+        data = get_store().swap_course(me["uid"], me["email"], old_id, new_id, expected, me["name"])
+    except (SwapError, RequestError) as error:
+        return JsonResponse({"error": str(error)}, status=409)
+    return JsonResponse({"ok": True, "saved": data})
+
+
+@require_POST
+@school_login_required
+def api_apply(request):
+    me = _me(request)
+    if teacher_names(me["email"]):
+        return JsonResponse({"error": "teacher_account"}, status=403)
+    body = _json_body(request)
+    cid, kind, reason = body.get("course_id"), body.get("kind"), body.get("reason")
+    if (not isinstance(cid, str) or not cid or len(cid) > 40 or "/" in cid or not isinstance(kind, str)
+            or kind not in KINDS or not isinstance(reason, str) or not reason.strip() or len(reason) > 1000):
+        return JsonResponse({"error": "invalid_application"}, status=400)
+    try:
+        application = get_store().submit_application(me["uid"], me["email"], me["name"], cid, kind, reason)
+    except RequestError as error:
+        return JsonResponse({"error": str(error)}, status=409)
+    return JsonResponse({"ok": True, "application": application})
+
+
+@require_POST
+@school_login_required
+def api_review(request, request_id):
+    me = _me(request)
+    names = teacher_names(me["email"])
+    if not names:
+        return JsonResponse({"error": "not_teacher"}, status=403)
+    if len(request_id) > 64:
+        return JsonResponse({"error": "application_not_found"}, status=404)
+    body = _json_body(request)
+    decision, note = body.get("decision"), body.get("note", "")
+    if decision not in ("approve", "reject") or not isinstance(note, str) or len(note) > 1000:
+        return JsonResponse({"error": "invalid_decision"}, status=400)
+    try:
+        application = get_store().review_application(request_id, names, me["email"], decision, note)
+    except RequestError as error:
+        code = str(error)
+        return JsonResponse({"error": code}, status=403 if code == "not_course_teacher" else 404 if code == "application_not_found" else 409)
+    return JsonResponse({"ok": True, "application": application})
 
 
 def _rate_limited(uid):

@@ -74,6 +74,33 @@
       <p class="done-line" id="doneLine"></p>
     </div>
     <div class="summary" id="summary"></div>
+    <details class="panel applications-panel" id="applicationPanel">
+      <summary><span data-i18n="rTitle">特殊申請</span><span class="application-count" id="applicationCount"></span></summary>
+      <p class="hint" data-i18n="rHint">向授課老師提出申請；通過後會自動加入課表，不必再次加選。</p>
+      <div class="application-layout">
+        <form id="applicationForm">
+          <fieldset id="applicationFields">
+            <label for="applicationCourse" data-i18n="rCourse">申請課程</label>
+            <select id="applicationCourse" class="dept-sel" required></select>
+            <label for="applicationKind" data-i18n="rKind">申請類型</label>
+            <select id="applicationKind" class="dept-sel" required>
+              <option value="add" data-i18n="rKind_add">加簽</option>
+              <option value="cross_dept" data-i18n="rKind_cross_dept">跨系選修</option>
+              <option value="prerequisite" data-i18n="rKind_prerequisite">豁免先修</option>
+            </select>
+            <label for="applicationReason" data-i18n="rReason">申請理由</label>
+            <textarea id="applicationReason" rows="4" maxlength="1000" required aria-describedby="applicationReasonHint"></textarea>
+            <p class="hint" id="applicationReasonHint" data-i18n="rReasonHint">請說明申請原因；申請豁免先修時，請列出未修畢的先修課程與相關學習經驗。</p>
+            <button class="btn" id="applicationSubmit" type="submit" data-i18n="rSubmit">送出申請</button>
+          </fieldset>
+          <p id="applicationMessage" role="status" hidden></p>
+        </form>
+        <section class="application-history" aria-labelledby="applicationHistoryTitle">
+          <div class="sec-t"><h2 id="applicationHistoryTitle" data-i18n="rHistory">我的申請紀錄</h2><button class="btn ghost" id="applicationRefresh" type="button" data-i18n="rRefresh">重新整理</button></div>
+          <div id="applicationHistory" aria-live="polite"></div>
+        </section>
+      </div>
+    </details>
     <div class="main">
       <div class="col-list">
         <div class="mini" id="mini" aria-live="polite"></div>
@@ -99,11 +126,27 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog class="dlg" id="ttDlg" aria-labelledby="ttDlgT">
   <form method="dialog">
-    <p class="dlg-q" data-i18n="ttQ">要退選這門課嗎？</p>
+    <p class="dlg-q" data-i18n="ttQ">想調整這門課嗎？</p>
     <h3 id="ttDlgT"></h3>
     <p class="dlg-meta" id="ttDlgM"></p>
     <p class="dlg-warn" id="ttDlgW" hidden></p>
-    <div class="dlg-act"><button class="btn" value="keep" data-i18n="ttKeep">保留</button><button class="btn drop" value="drop" data-i18n="bDrop">退選</button></div>
+    <div class="dlg-act"><button class="btn" value="keep" data-i18n="ttKeep">保留</button><button class="btn ghost" value="swap" data-i18n="swapOpen">安全換課</button><button class="btn drop" value="drop" data-i18n="bDrop">退選</button></div>
+  </form>
+</dialog>
+<dialog class="dlg swap-dlg" id="swapDlg" aria-labelledby="swapTitle" aria-describedby="swapHint">
+  <form id="swapForm">
+    <p class="dlg-q" data-i18n="swapIntro">先選替代課，再確認換課</p>
+    <h3 id="swapTitle" data-i18n="swapOpen">安全換課</h3>
+    <p class="dlg-meta" id="swapHint" data-i18n="swapHint">只列出完整時段相同、不與其餘課程衝堂且有名額的課。確認成功前，原課保持不變。</p>
+    <div class="swap-course"><small data-i18n="swapOld">目前已選</small><b id="swapOldName"></b><p class="dlg-meta" id="swapOldMeta"></p></div>
+    <label class="swap-label" for="swapPick" data-i18n="swapPick">同時段替代課程</label>
+    <select class="dept-sel" id="swapPick" required></select>
+    <p class="dlg-meta" id="swapEmpty" data-i18n="swapEmpty" hidden>目前沒有符合條件的替代課程，原課會繼續保留。</p>
+    <div class="swap-course" id="swapPreview" hidden></div>
+    <div class="dlg-warn" id="swapWarnings" hidden></div>
+    <p class="note" data-i18n="swapDisclaimer">這是本系統的選課調整；實際選課資格與學校選課結果仍以校方系統為準。</p>
+    <p class="swap-error" id="swapError" role="alert" hidden></p>
+    <div class="dlg-act"><button class="btn ghost" id="swapCancel" type="button" data-i18n="swapCancel">保留原課</button><button class="btn" id="swapConfirm" type="submit" disabled data-i18n="swapConfirm">確認換課</button></div>
   </form>
 </dialog>
 <nav class="mnav" data-i18n-aria="navAria" aria-label="主要導覽">
@@ -127,6 +170,7 @@
 {{ courses|json_script:"raw-data" }}
 {{ boot|json_script:"boot-data" }}
 <script>window.NTUB_SSO=true;window.APP={csrf:"{{ csrf_token }}"};</script>
+<script src="{% static 'courses/request-strings.js' %}"></script>
 <script src="{% static 'courses/app.js' %}"></script>
 </body>
 </html>

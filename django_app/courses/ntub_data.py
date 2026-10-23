@@ -3,6 +3,7 @@
 RAW 每筆：[id, 學系, src, 班級, 年級, 課號, 課名, 老師, slots, 教室, 學分, 名額, 已選, 課別, cat, icon]
 - src：dept 本系課、ge 通識、pe 體育、mil 軍訓
 - slots：[[星期, 起始節, 結束節], ...]
+- Django 輸出給前端時，最後另附可選的 approval_kind（舊資料不限制）。
 """
 import re
 from pathlib import Path
@@ -10,6 +11,13 @@ from pathlib import Path
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "ntub_115-1.txt"
 
 FIELDS = ["id", "dept", "src", "cls", "grade", "code", "name", "teacher", "slots", "room", "credits", "cap", "enr", "type", "cat", "icon"]
+
+
+def required_application_kind(course, major):
+    kind = course.get("approval_kind", "")
+    if kind == "cross_dept" and (course["src"] != "dept" or course["dept"] == major):
+        return ""
+    return kind if kind in ("add", "cross_dept", "prerequisite") else ""
 
 GN={'一':1,'二':2,'三':3,'四':4}
 KW=[('code',['程式','Python','網頁','網站','應用程式','遊戲開發']),('lock',['資安','資訊安全','安全']),('tree',['資料結構','資料庫']),

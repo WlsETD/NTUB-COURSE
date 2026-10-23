@@ -30,6 +30,34 @@
     </div>
   </header>
 
+  <section class="panel review-panel" aria-labelledby="reviewTitle">
+    <div class="sec-t"><h2 id="reviewTitle" data-review-i18n="rTeacherTitle">特殊申請審核</h2><div class="review-tools"><span class="application-status pending"><span data-review-i18n="rPendingCount">待審核</span> {{ pending_count }}</span><select id="requestLang" aria-label="申請區語言 / Request section language"><option value="zh">中文</option><option value="en">English</option></select><button type="button" class="btn ghost" id="reviewRefresh" data-review-i18n="rRefresh">重新整理</button></div></div>
+    <p class="hint" data-review-i18n="rTeacherHint">只列出你開設課程的申請。通過後會立即加入學生課表並標記「申請通過」；衝堂時不會通過。</p>
+    <p class="hint" data-review-i18n="rAddHint">加簽核准可超額加入；跨系選修及先修豁免仍須有名額。</p>
+    <p class="review-error" id="reviewMessage" role="alert" hidden></p>
+    <div class="request-review-list">
+    {% for a in applications %}
+      <article class="application-record" data-request-id="{{ a.id }}">
+        <div class="application-top"><h3>{{ a.course_name }}</h3><span class="application-status {{ a.status }}" data-review-i18n="rStatus_{{ a.status }}">{{ a.status }}</span></div>
+        <span class="request-kind" data-review-i18n="rKind_{{ a.kind }}">{{ a.kind }}</span>
+        <p class="request-student"><span data-review-i18n="rStudent">申請學生</span>：<b>{{ a.name|default:"—" }}</b> · {{ a.email }} · {{ a.cls }}</p>
+        <p class="application-reason">{{ a.reason }}</p>
+        <small><span data-review-i18n="rSubmittedAt">送件時間</span>：<time datetime="{{ a.created_at }}" data-review-time>{{ a.created_at }}</time></small>
+        {% if a.status == 'pending' %}
+          <label for="review-note-{{ a.id }}" class="review-note-label" data-review-i18n="rReviewNote">審核回覆（選填，最多 1000 字）</label>
+          <textarea id="review-note-{{ a.id }}" data-review-note="{{ a.id }}" rows="2" maxlength="1000"></textarea>
+          <div class="review-actions"><button type="button" class="btn ghost" data-decision="reject" data-review-i18n="rReject">拒絕申請</button><button type="button" class="btn" data-decision="approve" data-review-i18n="rApprove">通過並加入課表</button></div>
+        {% else %}
+          <p class="application-reply"><span data-review-i18n="rReply">教師回覆</span>：{% if a.note %}{{ a.note }}{% else %}<span data-review-i18n="rNoReply">未填寫回覆</span>{% endif %}</p>
+          <small><span data-review-i18n="rReviewedAt">審核時間</span>：<time datetime="{{ a.reviewed_at }}" data-review-time>{{ a.reviewed_at }}</time> · {{ a.reviewer_name }}</small>
+        {% endif %}
+      </article>
+    {% empty %}
+      <p class="tch-empty" data-review-i18n="rReviewEmpty">目前沒有收到特殊申請。</p>
+    {% endfor %}
+    </div>
+  </section>
+
   {% for c in courses %}
   <section class="panel tch-course">
     <div class="tch-head">
@@ -43,7 +71,7 @@
     {% if c.students %}
     <ol class="tch-list">
       {% for s in c.students %}
-      <li><span class="tch-sid">{{ s.sid }}</span><b>{{ s.name|default:"—" }}</b><span class="tch-cls">{{ s.cls }}</span><span class="tch-mail">{{ s.email }}</span></li>
+      <li><span class="tch-sid">{{ s.sid }}</span><b>{{ s.name|default:"—" }}{% if s.approved %} <span class="approval-tag" data-review-i18n="rApproved">申請通過</span>{% endif %}</b><span class="tch-cls">{{ s.cls }}</span><span class="tch-mail">{{ s.email }}</span></li>
       {% endfor %}
     </ol>
     {% else %}
@@ -55,23 +83,8 @@
   {% endfor %}
   <p class="tch-note">只列出透過本系統選課的學生，每 15 秒自動更新（最後更新 {% now "H:i:s" %}）；課程資料為 2026/10/08 北商全校課程查詢的快照。</p>
 </div>
-<script>
-  // 用事件委派：自動更新會換掉整個 .wrap，按鈕也是新的
-  document.addEventListener("click", function (e) {
-    if (!e.target.closest("#logout")) return;
-    fetch("/auth/logout/", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" }, credentials: "same-origin" })
-      .catch(function () {}).then(function () { location.href = "/"; });
-  });
-  // 每 15 秒重新抓一次頁面，學生選課後老師不用手動重新整理；分頁在背景時不抓
-  setInterval(function () {
-    if (document.hidden) return;
-    fetch(location.href, { credentials: "same-origin" })
-      .then(function (r) { return r.ok ? r.text() : null; })
-      .then(function (html) {
-        var fresh = html && new DOMParser().parseFromString(html, "text/html").querySelector(".wrap.tch");
-        if (fresh) document.querySelector(".wrap.tch").innerHTML = fresh.innerHTML; // 登入過期時抓到的是登入頁，就不換
-      }).catch(function () {});
-  }, 15000);
-</script>
+<script>window.TEACHER_CSRF="{{ csrf_token }}";</script>
+<script src="{% static 'courses/request-strings.js' %}"></script>
+<script src="{% static 'courses/teacher.js' %}"></script>
 </body>
 </html>
