@@ -654,3 +654,8 @@ section.show{animation:rise .35s cubic-bezier(.2,.7,.2,1)}
 .summary.static .stat{animation:none}
 .meter i{transition:width .5s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* 主題切換的擴散動畫：舊畫面不淡出、新畫面由 JS 用 clip-path 擴散 */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-old(root){z-index:1}
+::view-transition-new(root){z-index:2}

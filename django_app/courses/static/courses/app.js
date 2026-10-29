@@ -738,6 +738,15 @@
   // theme: system -> light -> dark
   var THEMES=[["system","<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M12 4v16\"/><path d=\"M12 4a8 8 0 010 16z\" fill=\"currentColor\"/></svg>","themeSystem"],["light","<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg>","themeLight"],["dark","<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z\"/></svg>","themeDark"]],ti=1; // 預設淺色（THEMES[1]）
   try{var saved=localStorage.getItem("cs-theme");THEMES.forEach(function(t,i){if(t[0]===saved)ti=i})}catch(e){}
+  // 切換主題：新主題從按鈕位置像水波一樣擴散到整個畫面（View Transitions API，不支援或要求減少動態時直接切換）
+  function themeWipe(x,y,apply){
+    if(!document.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches){apply();return}
+    var r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+    var vt=document.startViewTransition(apply);
+    vt.ready.then(function(){
+      document.documentElement.animate({clipPath:["circle(0px at "+x+"px "+y+"px)","circle("+r+"px at "+x+"px "+y+"px)"]},
+        {duration:700,easing:"ease-in-out",pseudoElement:"::view-transition-new(root)"})
+    }).catch(function(){})}
   function applyTheme(){
     var t=THEMES[ti],root=document.documentElement;
     root.classList.add("theming");
@@ -770,7 +779,7 @@
     if(b.dataset.langv){if(b.dataset.langv===LANG)return;LANG=b.dataset.langv;
       try{localStorage.setItem("cs-lang",LANG)}catch(er){}
       applyStatic();applyAccent();state.popAll=true;render();toast(tr("langToast"))}
-    else{ti=+b.dataset.themev;applyTheme();try{localStorage.setItem("cs-theme",THEMES[ti][0])}catch(er){}toast(tr("themeToast",tr(THEMES[ti][2])))}});
+    else{ti=+b.dataset.themev;var r=b.getBoundingClientRect();themeWipe(r.left+r.width/2,r.top+r.height/2,applyTheme);try{localStorage.setItem("cs-theme",THEMES[ti][0])}catch(er){}toast(tr("themeToast",tr(THEMES[ti][2])))}});
   applyTheme();
   applyStatic();
   render();
