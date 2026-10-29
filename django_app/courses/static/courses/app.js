@@ -742,14 +742,14 @@
   function themeWipe(x,y,apply){
     if(!document.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches){apply();return}
     var r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
-    var vt=document.startViewTransition(apply);
+    var vt=document.startViewTransition(function(){apply(true)});
     vt.ready.then(function(){
       document.documentElement.animate({clipPath:["circle(0px at "+x+"px "+y+"px)","circle("+r+"px at "+x+"px "+y+"px)"]},
         {duration:700,easing:"ease-in-out",pseudoElement:"::view-transition-new(root)"})
     }).catch(function(){})}
-  function applyTheme(){
+  function applyTheme(noFade){
     var t=THEMES[ti],root=document.documentElement;
-    root.classList.add("theming");
+    if(!noFade)root.classList.add("theming");  // 擴散動畫時不要同時淡入淡出
     if(t[0]==="system")root.removeAttribute("data-theme");else root.setAttribute("data-theme",t[0]);
     $("themeSeg").innerHTML=THEMES.map(function(x,k){return '<button type="button" class="seg-b" data-themev="'+k+'" aria-pressed="'+(k===ti)+'" aria-label="'+tr(x[2])+'" title="'+tr(x[2])+'">'+x[1]+'</button>'}).join("");
     setTimeout(function(){root.classList.remove("theming")},400)}
