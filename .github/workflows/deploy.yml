@@ -47,8 +47,8 @@ jobs:
       
           config = {
               "DJANGO_DEBUG": "0",
-              "DJANGO_ALLOWED_HOSTS": "ntub-course-*.asia-east1.run.app",
-              "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ntub-course-*.asia-east1.run.app",
+              "DJANGO_ALLOWED_HOSTS": "ntub-course-352781737994.asia-east1.run.app,ntub-course-royruhsnva-de.a.run.app",
+              "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ntub-course-352781737994.asia-east1.run.app,https://ntub-course-royruhsnva-de.a.run.app",
               "FIREBASE_API_KEY": os.environ["FIREBASE_API_KEY"],
               "FIREBASE_AUTH_DOMAIN": os.environ["FIREBASE_AUTH_DOMAIN"],
               "FIREBASE_PROJECT_ID": os.environ["FIREBASE_PROJECT_ID"],
