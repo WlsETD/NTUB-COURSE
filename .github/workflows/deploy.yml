@@ -31,6 +31,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL}}
           OPENAI_MODEL_FAST: ${{ secrets.OPENAI_MODEL_FAST}}
+          TEACHER_EXTRA: ${{ secrets.TEACHER_EXTRA }}
             
         
         run: |
