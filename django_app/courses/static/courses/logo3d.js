@@ -8,16 +8,17 @@
 
   var renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true }); } catch (e) { return; }
-  var W = 132, H = 96;
+  var W = 640, H = 481;  // canvas 比 logo 大很多，方塊才能從畫面外很遠的地方飛進來（H 取奇數，中心才會剛好對齊 CSS 方塊）
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(W, H, false);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.setClearColor(0x000000, 0);
 
-  // 相機距離讓 1 單位剛好 10px：壓平時的方塊尺寸（26×20、間距 5）和 CSS 版一致
+  // 廣角相機，距離讓 z=0 平面上 1 單位剛好 10px：壓平時的方塊尺寸（26×20、間距 5）和 CSS 版一致
+  var FOV = 100;
   var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
-  camera.position.set(0, 0, H / 10 / (2 * Math.tan(Math.PI / 12)));
+  var camera = new THREE.PerspectiveCamera(FOV, W / H, 0.1, 400);
+  camera.position.set(0, 0, H / 10 / 2 / Math.tan(FOV * Math.PI / 360));
   var ambient = new THREE.AmbientLight(0xffffff, 0.75); scene.add(ambient);
   var key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(3, 5, 8); scene.add(key);
   var rim = new THREE.DirectionalLight(0xffffff, 0.35); rim.position.set(-5, -3, 4); scene.add(rim);
@@ -36,7 +37,7 @@
   var css = getComputedStyle(document.documentElement);
   var group = new THREE.Group(); scene.add(group);
   var P = Math.PI;
-  var FROM = [[-9, 6, -16], [0, 10, -20], [9, 6, -16], [-9, -6, -16], [0, -10, -20], [9, -6, -16]];  // 飛入起點
+  var FROM = [[-110, 60, -60], [0, -85, -90], [110, 60, -60], [-110, -60, -70], [0, 85, -90], [110, -60, -70]];  // 飛入起點：很遠很遠的地方，透視會讓它們一開始只是小小的點
   var SPIN = [[4 * P, -4 * P], [-4 * P, 6 * P], [4 * P, 4 * P], [-6 * P, -4 * P], [4 * P, -6 * P], [-4 * P, 4 * P]];  // 飛入時的旋轉量
   var meshes = [], mats = [];
   for (var i = 0; i < 6; i++) {
@@ -58,8 +59,8 @@
   function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  var IN_DELAY = 0.12, IN_DUR = 1.0;                 // 飛入：每塊間隔 0.12 秒、各 1 秒
-  var SHOW_AT = 1.8, SHOW_DUR = 1.8;                 // 炸開並整體轉一圈
+  var IN_DELAY = 0.12, IN_DUR = 1.4;                 // 飛入：每塊間隔 0.12 秒、各 1 秒
+  var SHOW_AT = 2.1, SHOW_DUR = 1.8;                 // 炸開並整體轉一圈
   var FLAT_AT = SHOW_AT + SHOW_DUR, FLAT_DUR = 1.3;  // 壓平成 2D
   var END_AT = FLAT_AT + FLAT_DUR, FADE = 0.35;      // 換回 CSS 方塊
   var t0 = performance.now(), swapped = false;
@@ -73,7 +74,8 @@
     meshes.forEach(function (m, i) {
       var k = clamp01((t - 0.05 - i * IN_DELAY) / IN_DUR), e = easeOutBack(k), h = m.userData.home;
       m.visible = k > 0;
-      m.scale.set(Math.max(e, 0.001), Math.max(e, 0.001), Math.max(e, 0.001) * lerp(1, 0.02, f));
+      var pop = Math.min(k * 5, 1);  // 剛出現時很快長到正常大小；遠近縮放交給透視，越靠近越大、越快
+      m.scale.set(pop, pop, Math.max(pop, 0.001) * lerp(1, 0.02, f));
       var fly = 1 - e;  // 飛入進度剩餘量
       var spread = 1 + 0.45 * ex;
       m.position.set(
