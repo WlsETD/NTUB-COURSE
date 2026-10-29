@@ -742,7 +742,10 @@
   function themeWipe(x,y,apply){
     if(!document.startViewTransition||matchMedia("(prefers-reduced-motion: reduce)").matches){apply();return}
     var r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+    var root=document.documentElement;
+    root.classList.add("wiping");  // 擴散期間關掉所有元件自己的顏色過渡，整頁才會同步換色
     var vt=document.startViewTransition(function(){apply(true)});
+    vt.finished.then(function(){root.classList.remove("wiping")},function(){root.classList.remove("wiping")});
     vt.ready.then(function(){
       document.documentElement.animate({clipPath:["circle(0px at "+x+"px "+y+"px)","circle("+r+"px at "+x+"px "+y+"px)"]},
         {duration:700,easing:"ease-in-out",pseudoElement:"::view-transition-new(root)"})
