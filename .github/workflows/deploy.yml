@@ -29,6 +29,8 @@ jobs:
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL}}
+          OPENAI_MODEL_FAST: ${{ secrets.OPENAI_MODEL_FAST}}
             
         
         run: |
