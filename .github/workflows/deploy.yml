@@ -23,8 +23,6 @@ jobs:
 
 
       - name: Build and deploy to Cloud Run
-          working-directory: django_app
-        
           env:
             FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
             FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
