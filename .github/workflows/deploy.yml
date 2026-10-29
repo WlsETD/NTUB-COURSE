@@ -23,56 +23,55 @@ jobs:
 
 
       - name: Build and deploy to Cloud Run
-          env:
-            FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-            FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-            FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-            FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-            # OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
-            # OPENAI_MODEL_FAST: ${{ secrets.OPENAI_MODEL_FAST }}
-            # TEACHER_EXTRA: ${{ secrets.TEACHER_EXTRA }}
+        working-directory: django_app
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+            
         
-          run: |
-            python3 - <<'PY'
-            import os
-            import json
-            from pathlib import Path
-        
-            config = {
-                "DJANGO_DEBUG": "0",
-                "DJANGO_ALLOWED_HOSTS": "ntub-course-*.asia-east1.run.app",
-                "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ntub-course-*.asia-east1.run.app",
-                "FIREBASE_API_KEY": os.environ["FIREBASE_API_KEY"],
-                "FIREBASE_AUTH_DOMAIN": os.environ["FIREBASE_AUTH_DOMAIN"],
-                "FIREBASE_PROJECT_ID": os.environ["FIREBASE_PROJECT_ID"],
-                "FIREBASE_APP_ID": os.environ["FIREBASE_APP_ID"],
-                "OPENAI_MODEL": os.environ["OPENAI_MODEL"],
-                "OPENAI_MODEL_FAST": os.environ["OPENAI_MODEL_FAST"],
-                "AI_RATE_LIMIT": "20",
-                "SCHOOL_DOMAIN": "ntub.edu.tw",
-                "TEACHER_EXTRA": os.environ["TEACHER_EXTRA"],
-            }
-        
-            Path("env.yaml").write_text(
-                "\n".join(
-                    f"{key}: {json.dumps(value, ensure_ascii=False)}"
-                    for key, value in config.items()
-                ) + "\n",
-                encoding="utf-8",
-            )
-            PY
-        
-            gcloud run deploy ntub-course \
-              --source . \
-              --platform managed \
-              --region asia-east1 \
-              --project ntub-90ecf \
-              --allow-unauthenticated \
-              --max-instances 3 \
-              --env-vars-file env.yaml \
-              --quiet
-        
-            rm -f env.yaml
+        run: |
+          python3 - <<'PY'
+          import os
+          import json
+          from pathlib import Path
+      
+          config = {
+              "DJANGO_DEBUG": "0",
+              "DJANGO_ALLOWED_HOSTS": "ntub-course-*.asia-east1.run.app",
+              "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ntub-course-*.asia-east1.run.app",
+              "FIREBASE_API_KEY": os.environ["FIREBASE_API_KEY"],
+              "FIREBASE_AUTH_DOMAIN": os.environ["FIREBASE_AUTH_DOMAIN"],
+              "FIREBASE_PROJECT_ID": os.environ["FIREBASE_PROJECT_ID"],
+              "FIREBASE_APP_ID": os.environ["FIREBASE_APP_ID"],
+              "OPENAI_MODEL": os.environ["OPENAI_MODEL"],
+              "OPENAI_MODEL_FAST": os.environ["OPENAI_MODEL_FAST"],
+              "AI_RATE_LIMIT": "20",
+              "SCHOOL_DOMAIN": "ntub.edu.tw",
+              "TEACHER_EXTRA": os.environ["TEACHER_EXTRA"],
+          }
+      
+          Path("env.yaml").write_text(
+              "\n".join(
+                  f"{key}: {json.dumps(value, ensure_ascii=False)}"
+                  for key, value in config.items()
+              ) + "\n",
+              encoding="utf-8",
+          )
+          PY
+      
+          gcloud run deploy ntub-course \
+            --source . \
+            --platform managed \
+            --region asia-east1 \
+            --project ntub-90ecf \
+            --allow-unauthenticated \
+            --max-instances 3 \
+            --env-vars-file env.yaml \
+            --quiet
+      
+          rm -f env.yaml
 
       - name: Verify deployment
         run: |
