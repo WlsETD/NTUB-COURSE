@@ -19,11 +19,11 @@
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;display:grid;place-items:center;padding:24px 16px;word-break:keep-all;overflow-wrap:anywhere}
 .stage{width:min(440px,100%);display:flex;flex-direction:column;align-items:center;gap:22px}
-.intro{display:flex;flex-direction:column;align-items:center;gap:10px;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.intro{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
 body.login .intro{transform:translateY(-6px) scale(.72)}
 .tiles{display:grid;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(2,20px);gap:5px;margin-bottom:10px}
-.tiles[hidden]{display:none}
-#logo3d{width:132px;height:96px;margin:-8px 0 0}
+
+#logo3d{position:absolute;left:50%;top:-26px;margin-left:-66px;width:132px;height:96px;pointer-events:none}
 .tiles i{border-radius:5px;opacity:0;animation:tile .5s cubic-bezier(.2,.9,.3,1.3) both}
 .tiles i:nth-child(1){background:var(--t1);animation-delay:.05s}.tiles i:nth-child(2){background:var(--t2);animation-delay:.15s}.tiles i:nth-child(3){background:var(--t3);animation-delay:.25s}
 .tiles i:nth-child(4){background:var(--t4);animation-delay:.35s}.tiles i:nth-child(5){background:var(--t5);animation-delay:.45s}.tiles i:nth-child(6){background:var(--t6);animation-delay:.55s}
@@ -67,7 +67,7 @@ body.login .line{opacity:0;transition:opacity .3s}
     <div class="tiles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <canvas id="logo3d" width="132" height="96" aria-hidden="true" hidden></canvas>
     <h1 id="title" aria-label="NTUB COURSE"></h1>
-    <p class="sub">國立臺北商業大學 · 115-1 四技日間部</p>
+    <p class="sub">國立臺北商業大學 · 智能選課系統</p>
     <span class="line" aria-hidden="true"></span>
   </div>
   <div class="card" id="card" hidden>
