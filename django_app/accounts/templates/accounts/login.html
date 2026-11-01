@@ -58,6 +58,13 @@ body.login .line{opacity:0;transition:opacity .3s}
 .dev input{flex:1;min-width:0;border:0;border-radius:8px;padding:7px 10px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px}
 .dev-msg{margin:0;font-size:12.5px;color:var(--bad)}
 .mem-banner{position:fixed;top:0;left:0;right:0;z-index:5;background:var(--bad-soft);color:var(--bad);font-size:13px;font-weight:700;text-align:center;padding:6px 16px}
+/* 捲軸：和 app.css 同一套（細溝槽＋主題色膠囊＋三顆握點） */
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:linear-gradient(var(--surface-2),var(--surface-2)) center/4px 100% no-repeat;border-radius:9px}
+::-webkit-scrollbar-thumb{min-height:44px;border:3px solid transparent;background-clip:padding-box;border-radius:9px;background-color:color-mix(in srgb,var(--accent) 62%,transparent)}
+::-webkit-scrollbar-thumb:hover,::-webkit-scrollbar-thumb:active{border-width:1.5px;background-color:var(--accent);background-image:radial-gradient(circle,var(--accent-fg) 1.3px,transparent 1.8px),radial-gradient(circle,var(--accent-fg) 1.3px,transparent 1.8px),radial-gradient(circle,var(--accent-fg) 1.3px,transparent 1.8px);background-size:6px 6px;background-repeat:no-repeat;background-position:center calc(50% - 6px),center,center calc(50% + 6px)}
+::-webkit-scrollbar-corner,::-webkit-scrollbar-button{display:none}
+@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:var(--accent) transparent}}
 /* 右下角的手機／電腦切換鈕：進場時從畫面上方掉下來 */
 .devbtn{position:fixed;right:20px;bottom:20px;z-index:30;width:48px;height:48px;border:0;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 24px rgba(10,20,30,.22);animation:drop 1s .4s both}
 .devbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
