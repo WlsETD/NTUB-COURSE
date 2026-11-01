@@ -15,7 +15,7 @@
 <style>
 @font-face{font-family:"Cubic 11";src:url("{% static 'courses/fonts/cubic11.woff2' %}") format("woff2");font-display:swap}
 :root{--bg:#f3f5f7;--surface:#fff;--surface-2:#eaeef2;--fg:#18222d;--muted:#5d6b7a;--accent:#c23a64;--accent-fg:#fff;--bad:#b3382c;--bad-soft:#f8dedb;
-  --t1:#1a73e8;--t2:#d93025;--t3:#f9ab00;--t4:#188038;--t5:#0e6b75;--t6:#6741d9}
+  --t1:#1a73e8;--t2:#d93025;--t3:#f9ab00;--t4:#188038;--t5:#0e6b75;--t6:#6741d9;--phone:#141b22}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;display:grid;place-items:center;padding:24px 16px;word-break:keep-all;overflow-wrap:anywhere}
 .stage{width:min(440px,100%);display:flex;flex-direction:column;align-items:center;gap:22px}
@@ -48,7 +48,7 @@ body.login .line{opacity:0;transition:opacity .3s}
 .gbtn svg{background:#fff;border-radius:50%;padding:3px;width:24px;height:24px}
 .msg{width:100%;font-size:13px;background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:10px 12px;text-align:left}
 .note{margin:0;font-size:12px;color:var(--muted)}
-.skip{position:fixed;right:20px;bottom:20px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}
+.skip{position:fixed;right:84px;bottom:32px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}
 [hidden]{display:none!important}
 .dev{width:100%;margin-top:6px;background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .dev-t{margin:0;font-size:13px;font-weight:700}
@@ -58,6 +58,29 @@ body.login .line{opacity:0;transition:opacity .3s}
 .dev input{flex:1;min-width:0;border:0;border-radius:8px;padding:7px 10px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px}
 .dev-msg{margin:0;font-size:12.5px;color:var(--bad)}
 .mem-banner{position:fixed;top:0;left:0;right:0;z-index:5;background:var(--bad-soft);color:var(--bad);font-size:13px;font-weight:700;text-align:center;padding:6px 16px}
+/* 右下角的手機／電腦切換鈕：進場時從畫面上方掉下來 */
+.devbtn{position:fixed;right:20px;bottom:20px;z-index:30;width:48px;height:48px;border:0;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 24px rgba(10,20,30,.22);animation:drop 1s .4s both}
+.devbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.devbtn svg.in{animation:flip .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes drop{0%{transform:translateY(calc(88px - 100vh));opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
+  12%{opacity:1}
+  62%{transform:none;animation-timing-function:cubic-bezier(0,.55,.45,1)}
+  78%{transform:translateY(-14px);animation-timing-function:cubic-bezier(.55,0,1,.45)}
+  90%{transform:none;animation-timing-function:cubic-bezier(0,.55,.45,1)}
+  95%{transform:translateY(-4px)}100%{transform:none}}
+@keyframes flip{from{opacity:0;transform:rotateY(90deg) scale(.6)}to{opacity:1;transform:none}}
+/* 手機版預覽：用 iframe 載入同一頁，寬度小於 720px 所以會套用手機版面 */
+body.phone-on{overflow:hidden}
+body.phone-on .skip{display:none}
+.phone-view{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px;animation:pv .35s cubic-bezier(.2,.8,.2,1) both}
+.phone{height:min(844px,calc(100vh - 48px));aspect-ratio:390/844;max-width:calc(100vw - 48px);background:var(--phone);border-radius:54px;padding:12px;box-shadow:0 30px 80px rgba(10,20,30,.3)}
+.screen{height:100%;border-radius:42px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.screen .bar{flex:none;height:40px;display:grid;place-items:center}
+.screen .bar i{width:92px;height:26px;border-radius:20px;background:var(--phone)}
+.screen iframe{flex:1;width:100%;border:0;display:block}
+@keyframes pv{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+/* 本來就在手機或平板上時不需要預覽 */
+@media (max-width:720px), (max-width:1366px) and (pointer:coarse){.devbtn{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}h1 .ch,.sub,.tiles i{opacity:1}.line{transform:none}}
 </style>
 </head>
@@ -94,6 +117,7 @@ body.login .line{opacity:0;transition:opacity .3s}
   </div>
 </div>
 <button class="skip" id="skip" type="button">略過動畫</button>
+<button class="devbtn" id="devbtn" type="button" aria-pressed="false" aria-label="切換成手機版" title="切換成手機版"></button>
 
 {{ firebase_config|json_script:"firebase-config" }}
 <script src="{% static 'courses/vendor/three.min.js' %}"></script>
@@ -123,6 +147,32 @@ body.login .line{opacity:0;transition:opacity .3s}
   try { skipIntro = sessionStorage.getItem("cs-skipintro") === "1"; sessionStorage.removeItem("cs-skipintro"); } catch (e) {}
   setTimeout(showLogin, reduce || skipIntro ? 0 : 2600);
   document.getElementById("skip").onclick = showLogin;
+
+  // 手機版預覽：把同一個網址放進手機外框的 iframe；iframe 裡面不再顯示這顆按鈕
+  (function () {
+    var b = document.getElementById("devbtn"), view = null;
+    if (window.top !== window.self) { b.remove(); return; }
+    var PHONE = '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>';
+    var PC = '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/>';
+    function icon(paths, anim) { b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"' + (anim ? ' class="in"' : "") + ">" + paths + "</svg>"; }
+    function set(on) {
+      if (on) {
+        view = document.createElement("div");
+        view.className = "phone-view";
+        view.innerHTML = '<div class="phone"><div class="screen"><div class="bar" aria-hidden="true"><i></i></div><iframe title="手機版預覽"></iframe></div></div>';
+        view.querySelector("iframe").src = location.href;
+        document.body.appendChild(view);
+      } else if (view) {
+        view.remove(); view = null;
+      }
+      document.body.classList.toggle("phone-on", on);
+      var label = on ? "切換回電腦版" : "切換成手機版";
+      b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", label); b.title = label;
+      icon(on ? PC : PHONE, true);
+    }
+    icon(PHONE, false);
+    b.onclick = function () { set(!view); };
+  })();
 
   // 本機測試登入（DEBUG 才有這個區塊）：不經過 Google，直接用信箱登入
   var dev = document.getElementById("dev");

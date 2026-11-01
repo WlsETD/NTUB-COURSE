@@ -42,6 +42,8 @@ MIDDLEWARE = [
 ]
 # Firebase 的 signInWithPopup 需要和彈出視窗溝通；預設的 same-origin 會讓它誤判成「登入視窗已關閉」
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+# 登入頁的「手機版預覽」用 iframe 載入自己的網站；只允許同網域嵌入，其他網站仍然不能嵌
+X_FRAME_OPTIONS = "SAMEORIGIN"
 
 ROOT_URLCONF = "config.urls"
 
