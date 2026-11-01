@@ -72,9 +72,9 @@ body.login .line{opacity:0;transition:opacity .3s}
 /* 手機版預覽：用 iframe 載入同一頁，寬度小於 720px 所以會套用手機版面 */
 body.phone-on{overflow:hidden}
 body.phone-on .skip{display:none}
-.phone-view{position:fixed;inset:0;z-index:20;overflow:hidden;background:var(--bg);display:grid;place-items:center;padding:24px;animation:pv .35s cubic-bezier(.2,.8,.2,1) both}
+.phone-view{position:fixed;inset:0;z-index:20;overflow:hidden;background:var(--bg);animation:pv .35s cubic-bezier(.2,.8,.2,1) both}
 /* iPhone 18 Pro：螢幕 402×874 點（2622×1206 像素 ÷ 3），iframe 永遠是這個尺寸；視窗太小時整支等比例縮小（--s 由 JS 算） */
-.phone{flex:none;width:426px;height:898px;padding:12px;background:var(--phone);border-radius:67px;box-shadow:0 30px 80px rgba(10,20,30,.3);transform:scale(var(--s,1))}
+.phone{position:absolute;left:50%;top:50%;width:426px;height:898px;padding:12px;background:var(--phone);border-radius:67px;box-shadow:0 30px 80px rgba(10,20,30,.3);transform:translate(-50%,-50%) scale(var(--s,1))}
 .screen{position:relative;width:402px;height:874px;border-radius:55px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
 /* 狀態列（安全區域上緣 62 點）與動態島 */
 .screen .bar{flex:none;height:62px;display:flex;justify-content:center;padding-top:11px}
