@@ -1,6 +1,6 @@
 ﻿DJANGO_DEBUG=0
-DJANGO_ALLOWED_HOSTS=ntub-course-*.asia-east1.run.app
-DJANGO_CSRF_TRUSTED_ORIGINS=https://ntub-course-*.asia-east1.run.app
+DJANGO_ALLOWED_HOSTS=ntub-course-352781737994.asia-east1.run.app,ntub-course-royruhsnva-de.a.run.app
+DJANGO_CSRF_TRUSTED_ORIGINS=https://ntub-course-352781737994.asia-east1.run.app,https://ntub-course-royruhsnva-de.a.run.app
 FIREBASE_API_KEY=AIzaSyA2Mkoy8echELPCsMGlhHuiA5iXUbftKb8
 FIREBASE_AUTH_DOMAIN=ntub-90ecf.firebaseapp.com
 FIREBASE_PROJECT_ID=ntub-90ecf

@@ -6,6 +6,13 @@ on:
     paths:
       - 'django_app/**'
       - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+# 和 django_app/deploy.ps1 做一樣的事：設定取自 deploy_env.txt，金鑰沿用 Secret Manager
+env:
+  PROJECT: ntub-90ecf
+  REGION: asia-east1
+  SERVICE: ntub-course
 
 jobs:
   deploy:
@@ -14,75 +21,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-
-      # Step 1: Authenticate to Google Cloud
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          project_id: ntub-90ecf
 
-      # Step 2: Set up Cloud SDK
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT }}
 
       - name: Build and deploy to Cloud Run
         working-directory: django_app
-        env:
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL}}
-          OPENAI_MODEL_FAST: ${{ secrets.OPENAI_MODEL_FAST}}
-          TEACHER_EXTRA: ${{ secrets.TEACHER_EXTRA }}
-            
-        
         run: |
-          python3 - <<'PY'
-          import os
-          import json
-          from pathlib import Path
-      
-          config = {
-              "DJANGO_DEBUG": "0",
-              "DJANGO_ALLOWED_HOSTS": "ntub-course-352781737994.asia-east1.run.app,ntub-course-royruhsnva-de.a.run.app",
-              "DJANGO_CSRF_TRUSTED_ORIGINS": "https://ntub-course-352781737994.asia-east1.run.app,https://ntub-course-royruhsnva-de.a.run.app",
-              "FIREBASE_API_KEY": os.environ["FIREBASE_API_KEY"],
-              "FIREBASE_AUTH_DOMAIN": os.environ["FIREBASE_AUTH_DOMAIN"],
-              "FIREBASE_PROJECT_ID": os.environ["FIREBASE_PROJECT_ID"],
-              "FIREBASE_APP_ID": os.environ["FIREBASE_APP_ID"],
-              "OPENAI_MODEL": os.environ["OPENAI_MODEL"],
-              "OPENAI_MODEL_FAST": os.environ["OPENAI_MODEL_FAST"],
-              "AI_RATE_LIMIT": "20",
-              "SCHOOL_DOMAIN": "ntub.edu.tw",
-              "TEACHER_EXTRA": os.environ["TEACHER_EXTRA"],
-          }
-      
-          Path("env.yaml").write_text(
-              "\n".join(
-                  f"{key}: {json.dumps(value, ensure_ascii=False)}"
-                  for key, value in config.items()
-              ) + "\n",
-              encoding="utf-8",
-          )
-          PY
-      
-          gcloud run deploy ntub-course \
-            --source . \
-            --platform managed \
-            --region asia-east1 \
-            --project ntub-90ecf \
-            --allow-unauthenticated \
-            --max-instances 3 \
-            --env-vars-file env.yaml \
-            --quiet
-      
-          rm -f env.yaml
+          # deploy_env.txt → YAML（去掉 BOM 與空值）
+          sed '1s/^\xEF\xBB\xBF//' deploy_env.txt | tr -d '\r' \
+            | awk -F= '/^[A-Z_]+=/{k=$1; sub(/^[^=]*=/,""); if($0!="") {gsub(/\x27/,"\x27\x27"); print k": \x27"$0"\x27"}}' \
+            > "$RUNNER_TEMP/env.yaml"
+
+          SECRETS="DJANGO_SECRET_KEY=django-secret-key:latest"
+          if gcloud secrets describe openai-api-key --project "$PROJECT" >/dev/null 2>&1; then
+            SECRETS="$SECRETS,OPENAI_API_KEY=openai-api-key:latest"
+          fi
+
+          gcloud run deploy "$SERVICE" --source . \
+            --region "$REGION" --project "$PROJECT" \
+            --allow-unauthenticated --max-instances 3 \
+            --env-vars-file "$RUNNER_TEMP/env.yaml" \
+            --set-secrets "$SECRETS"
 
       - name: Verify deployment
         run: |
-          SERVICE_URL=$(gcloud run services describe ntub-course --region asia-east1 --project ntub-90ecf --format='value(status.url)')
+          SERVICE_URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --project "$PROJECT" --format='value(status.url)')
           echo "✓ 部署完成: $SERVICE_URL"
           curl -s -I "$SERVICE_URL" | head -5
