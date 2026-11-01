@@ -72,12 +72,16 @@ body.login .line{opacity:0;transition:opacity .3s}
 /* 手機版預覽：用 iframe 載入同一頁，寬度小於 720px 所以會套用手機版面 */
 body.phone-on{overflow:hidden}
 body.phone-on .skip{display:none}
-.phone-view{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px;animation:pv .35s cubic-bezier(.2,.8,.2,1) both}
-.phone{height:min(844px,calc(100vh - 48px));aspect-ratio:390/844;max-width:calc(100vw - 48px);background:var(--phone);border-radius:54px;padding:12px;box-shadow:0 30px 80px rgba(10,20,30,.3)}
-.screen{height:100%;border-radius:42px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
-.screen .bar{flex:none;height:40px;display:grid;place-items:center}
-.screen .bar i{width:92px;height:26px;border-radius:20px;background:var(--phone)}
-.screen iframe{flex:1;width:100%;border:0;display:block}
+.phone-view{position:fixed;inset:0;z-index:20;overflow:hidden;background:var(--bg);display:grid;place-items:center;padding:24px;animation:pv .35s cubic-bezier(.2,.8,.2,1) both}
+/* iPhone 18 Pro：螢幕 402×874 點（2622×1206 像素 ÷ 3），iframe 永遠是這個尺寸；視窗太小時整支等比例縮小（--s 由 JS 算） */
+.phone{flex:none;width:426px;height:898px;padding:12px;background:var(--phone);border-radius:67px;box-shadow:0 30px 80px rgba(10,20,30,.3);transform:scale(var(--s,1))}
+.screen{position:relative;width:402px;height:874px;border-radius:55px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+/* 狀態列（安全區域上緣 62 點）與動態島 */
+.screen .bar{flex:none;height:62px;display:flex;justify-content:center;padding-top:11px}
+.screen .bar i{width:126px;height:37px;border-radius:20px;background:var(--phone)}
+.screen iframe{flex:1;width:402px;border:0;display:block}
+/* 主畫面指示條 */
+.screen::after{content:"";position:absolute;left:50%;bottom:8px;width:140px;height:5px;margin-left:-70px;border-radius:3px;background:var(--fg);opacity:.35;pointer-events:none}
 @keyframes pv{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
 /* 本來就在手機或平板上時不需要預覽 */
 @media (max-width:720px), (max-width:1366px) and (pointer:coarse){.devbtn{display:none}}
@@ -162,6 +166,7 @@ body.phone-on .skip{display:none}
         view.innerHTML = '<div class="phone"><div class="screen"><div class="bar" aria-hidden="true"><i></i></div><iframe title="手機版預覽"></iframe></div></div>';
         view.querySelector("iframe").src = location.href;
         document.body.appendChild(view);
+        fit();
       } else if (view) {
         view.remove(); view = null;
       }
@@ -170,6 +175,13 @@ body.phone-on .skip{display:none}
       b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", label); b.title = label;
       icon(on ? PC : PHONE, true);
     }
+    // 外框 426×898（螢幕 402×874 加上 12px 機身），四周各留 24px
+    function fit() {
+      if (!view) return;
+      var s = Math.min(1, (innerHeight - 48) / 898, (innerWidth - 48) / 426);
+      view.querySelector(".phone").style.setProperty("--s", s);
+    }
+    addEventListener("resize", fit);
     icon(PHONE, false);
     b.onclick = function () { set(!view); };
   })();
