@@ -76,22 +76,40 @@ body.login .line{opacity:0;transition:opacity .3s}
   90%{transform:none;animation-timing-function:cubic-bezier(0,.55,.45,1)}
   95%{transform:translateY(-4px)}100%{transform:none}}
 @keyframes flip{from{opacity:0;transform:rotateY(90deg) scale(.6)}to{opacity:1;transform:none}}
-/* 手機版預覽：用 iframe 載入同一頁，寬度小於 720px 所以會套用手機版面 */
+/* 裝置預覽：用 iframe 載入同一頁；iframe 寬度就是所選裝置的螢幕寬度，所以版面會跟著套用對應的媒體查詢 */
 body.phone-on{overflow:hidden}
 body.phone-on .skip{display:none}
 .phone-view{position:fixed;inset:0;z-index:20;overflow:hidden;background:var(--bg);animation:pv .35s cubic-bezier(.2,.8,.2,1) both}
-/* iPhone 18 Pro：螢幕 402×874 點（2622×1206 像素 ÷ 3），iframe 永遠是這個尺寸；視窗太小時整支等比例縮小（--s 由 JS 算） */
-.phone{position:absolute;left:50%;top:50%;width:426px;height:898px;padding:12px;background:var(--phone);border-radius:67px;box-shadow:0 30px 80px rgba(10,20,30,.3);transform:translate(-50%,-50%) scale(var(--s,1))}
-.screen{position:relative;width:402px;height:874px;border-radius:55px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
-/* 狀態列（安全區域上緣 62 點）與動態島 */
-.screen .bar{flex:none;height:62px;display:flex;justify-content:center;padding-top:11px}
-.screen .bar i{width:126px;height:37px;border-radius:20px;background:var(--phone)}
-.screen iframe{flex:1;width:402px;border:0;display:block}
-/* 主畫面指示條 */
+/* 外框尺寸由 JS 依所選裝置設定（--w／--h 是螢幕的點數，--bz 機身邊框，--r 機身圓角，--sb 狀態列高度）；視窗太小時整支等比例縮小（--s） */
+.phone{position:absolute;left:50%;top:50%;width:calc(var(--w) + var(--bz)*2);height:calc(var(--h) + var(--bz)*2);padding:var(--bz);background:var(--phone);border-radius:var(--r);box-shadow:0 30px 80px rgba(10,20,30,.3);transform:translate(-50%,-50%) scale(var(--s,1))}
+.screen{position:relative;width:var(--w);height:var(--h);border-radius:calc(var(--r) - var(--bz));overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+/* 狀態列與鏡頭：island＝iPhone 動態島、punch＝Android 打孔、dot＝平板前鏡頭、none＝無（iPhone SE） */
+.screen .bar{flex:none;height:var(--sb);display:flex;justify-content:center;padding-top:11px}
+.screen .bar i{background:var(--phone)}
+.phone[data-cam=island] .bar i{width:126px;height:37px;border-radius:20px}
+.phone[data-cam=punch] .bar i{width:14px;height:14px;margin-top:-2px;border-radius:50%}
+.phone[data-cam=dot] .bar{padding-top:8px}
+.phone[data-cam=dot] .bar i{width:8px;height:8px;border-radius:50%}
+.phone[data-cam=none] .bar i{display:none}
+.screen iframe{flex:1;width:var(--w);border:0;display:block}
+/* 主畫面指示條（有實體 Home 鍵的機型不畫） */
 .screen::after{content:"";position:absolute;left:50%;bottom:8px;width:140px;height:5px;margin-left:-70px;border-radius:3px;background:var(--fg);opacity:.35;pointer-events:none}
+.phone[data-home=no] .screen::after{display:none}
+.phone[data-cam=punch] .screen::after{width:108px;margin-left:-54px}
 @keyframes pv{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+/* 裝置選單：點右下角按鈕展開 */
+.devmenu{position:fixed;right:20px;bottom:80px;z-index:31;width:244px;max-height:calc(100vh - 100px);overflow:auto;padding:8px;border-radius:16px;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(10,20,30,.28);display:flex;flex-direction:column;gap:2px;animation:pv .2s cubic-bezier(.2,.8,.2,1) both}
+.devmenu[hidden]{display:none}
+.devmenu h3{margin:8px 10px 4px;font-size:12px;font-weight:700;color:var(--muted)}
+.devmenu h3:first-child{margin-top:4px}
+.devmenu button{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:40px;padding:0 10px;border:0;border-radius:10px;background:none;color:inherit;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.devmenu button small{font-size:12px;color:var(--muted)}
+.devmenu button:hover{background:var(--surface-2)}
+.devmenu button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.devmenu button[aria-pressed=true]{background:var(--accent);color:var(--accent-fg)}
+.devmenu button[aria-pressed=true] small{color:inherit;opacity:.85}
 /* 本來就在手機或平板上時不需要預覽 */
-@media (max-width:720px), (max-width:1366px) and (pointer:coarse){.devbtn{display:none}}
+@media (max-width:720px), (max-width:1366px) and (pointer:coarse){.devbtn,.devmenu{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}h1 .ch,.sub,.tiles i{opacity:1}.line{transform:none}}
 </style>
 </head>
@@ -128,7 +146,8 @@ body.phone-on .skip{display:none}
   </div>
 </div>
 <button class="skip" id="skip" type="button">略過動畫</button>
-<button class="devbtn" id="devbtn" type="button" aria-pressed="false" aria-label="切換成手機版" title="切換成手機版"></button>
+<button class="devbtn" id="devbtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="選擇預覽裝置" title="選擇預覽裝置"></button>
+<div class="devmenu" id="devmenu" role="group" aria-label="預覽裝置" hidden></div>
 
 {{ firebase_config|json_script:"firebase-config" }}
 <script src="{% static 'courses/vendor/three.min.js' %}"></script>
@@ -159,38 +178,101 @@ body.phone-on .skip{display:none}
   setTimeout(showLogin, reduce || skipIntro ? 0 : 2600);
   document.getElementById("skip").onclick = showLogin;
 
-  // 手機版預覽：把同一個網址放進手機外框的 iframe；iframe 裡面不再顯示這顆按鈕
+  // 裝置預覽：把同一個網址放進所選裝置外框的 iframe；iframe 裡面不再顯示這顆按鈕
+  // w／h＝螢幕點數（直向）、bz＝機身邊框、r＝機身圓角、sb＝狀態列高度、cam＝鏡頭樣式、home＝是否畫主畫面指示條
   (function () {
-    var b = document.getElementById("devbtn"), view = null;
-    if (window.top !== window.self) { b.remove(); return; }
+    var b = document.getElementById("devbtn"), menu = document.getElementById("devmenu"), view = null, cur = null, land = false;
+    if (window.top !== window.self) { b.remove(); menu.remove(); return; }
+    var GROUPS = [
+      { name: "iPhone", list: [
+        { id: "se", name: "iPhone SE", w: 375, h: 667, bz: 14, r: 44, sb: 20, cam: "none", home: "no" },
+        { id: "16", name: "iPhone 16", w: 393, h: 852, bz: 12, r: 65, sb: 59, cam: "island" },
+        { id: "18pro", name: "iPhone 18 Pro", w: 402, h: 874, bz: 12, r: 67, sb: 62, cam: "island" },
+        { id: "promax", name: "iPhone Pro Max", w: 440, h: 956, bz: 12, r: 67, sb: 62, cam: "island" }
+      ] },
+      { name: "Android 手機", list: [
+        { id: "small", name: "小尺寸 Android", w: 360, h: 640, bz: 12, r: 36, sb: 24, cam: "none", home: "no" },
+        { id: "galaxy", name: "Galaxy S", w: 360, h: 780, bz: 10, r: 48, sb: 32, cam: "punch" },
+        { id: "pixel", name: "Pixel 9", w: 412, h: 915, bz: 10, r: 50, sb: 36, cam: "punch" }
+      ] },
+      { name: "iPad", tablet: true, list: [
+        { id: "mini", name: "iPad mini", w: 744, h: 1133, bz: 18, r: 44, sb: 24, cam: "dot" },
+        { id: "ipad", name: "iPad", w: 820, h: 1180, bz: 18, r: 44, sb: 24, cam: "dot" },
+        { id: "pro11", name: "iPad Pro 11″", w: 834, h: 1194, bz: 18, r: 44, sb: 24, cam: "dot" },
+        { id: "pro13", name: "iPad Pro 13″", w: 1032, h: 1376, bz: 18, r: 44, sb: 24, cam: "dot" }
+      ] }
+    ];
     var PHONE = '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>';
+    var TABLET = '<rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>';
     var PC = '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/>';
     function icon(paths, anim) { b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"' + (anim ? ' class="in"' : "") + ">" + paths + "</svg>"; }
-    function set(on) {
-      if (on) {
-        view = document.createElement("div");
-        view.className = "phone-view";
-        view.innerHTML = '<div class="phone"><div class="screen"><div class="bar" aria-hidden="true"><i></i></div><iframe title="手機版預覽"></iframe></div></div>';
-        view.querySelector("iframe").src = location.href;
-        document.body.appendChild(view);
+    // 平板橫向時寬高對調
+    function size(d) { return land && d.tablet ? [d.h, d.w] : [d.w, d.h]; }
+
+    // 選單：電腦版 → 三組裝置 → 平板才有的方向
+    function item(label, small, pressed, fn) {
+      var x = document.createElement("button");
+      x.type = "button"; x.setAttribute("aria-pressed", pressed);
+      x.innerHTML = "<span></span><small></small>";
+      x.firstChild.textContent = label; x.lastChild.textContent = small || "";
+      x.onclick = fn; menu.appendChild(x);
+    }
+    function head(text) { var h = document.createElement("h3"); h.textContent = text; menu.appendChild(h); }
+    function buildMenu() {
+      menu.textContent = "";
+      item("電腦版", "", !cur, function () { set(null); });
+      GROUPS.forEach(function (g) {
+        head(g.name);
+        g.list.forEach(function (d) {
+          d.tablet = !!g.tablet;
+          item(d.name, d.w + "×" + d.h, !!cur && cur.id === d.id, function () { if (!d.tablet) land = false; set(d); });
+        });
+      });
+      if (cur && cur.tablet) { head("方向"); item(land ? "橫向" : "直向", "點一下旋轉", false, function () { land = !land; set(cur); }); }
+    }
+    function openMenu(on) {
+      menu.hidden = !on; b.setAttribute("aria-expanded", on);
+      if (on) buildMenu();
+    }
+
+    function set(d) {
+      cur = d;
+      if (d) {
+        if (!view) {
+          view = document.createElement("div");
+          view.className = "phone-view";
+          view.innerHTML = '<div class="phone"><div class="screen"><div class="bar" aria-hidden="true"><i></i></div><iframe title="裝置預覽"></iframe></div></div>';
+          view.querySelector("iframe").src = location.href;
+          document.body.appendChild(view);
+        }
+        var ph = view.querySelector(".phone"), z = size(d);
+        ph.dataset.cam = d.cam; ph.dataset.home = d.home || "yes";
+        ph.style.setProperty("--w", z[0] + "px"); ph.style.setProperty("--h", z[1] + "px");
+        ph.style.setProperty("--bz", d.bz + "px"); ph.style.setProperty("--r", d.r + "px"); ph.style.setProperty("--sb", d.sb + "px");
+        view.querySelector("iframe").title = d.name + "預覽";
         fit();
       } else if (view) {
         view.remove(); view = null;
       }
-      document.body.classList.toggle("phone-on", on);
-      var label = on ? "切換回電腦版" : "切換成手機版";
-      b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", label); b.title = label;
-      icon(on ? PC : PHONE, true);
+      document.body.classList.toggle("phone-on", !!d);
+      var label = d ? "預覽裝置：" + d.name + (d.tablet ? (land ? "（橫向）" : "（直向）") : "") + "，點一下更換" : "選擇預覽裝置";
+      b.setAttribute("aria-label", label); b.title = label;
+      icon(!d ? PC : d.tablet ? TABLET : PHONE, true);
+      if (!d) openMenu(false);
+      else if (!menu.hidden) buildMenu();
     }
-    // 外框 426×898（螢幕 402×874 加上 12px 機身），四周各留 24px
+    // 外框＝螢幕加上兩側機身邊框，四周各留 24px
     function fit() {
       if (!view) return;
-      var s = Math.min(1, (innerHeight - 48) / 898, (innerWidth - 48) / 426);
+      var z = size(cur);
+      var s = Math.min(1, (innerHeight - 48) / (z[1] + cur.bz * 2), (innerWidth - 48) / (z[0] + cur.bz * 2));
       view.querySelector(".phone").style.setProperty("--s", s);
     }
     addEventListener("resize", fit);
-    icon(PHONE, false);
-    b.onclick = function () { set(!view); };
+    addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { openMenu(false); b.focus(); } });
+    document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target) && !b.contains(e.target)) openMenu(false); });
+    icon(PC, false);
+    b.onclick = function () { openMenu(menu.hidden); };
   })();
 
   // 本機測試登入（DEBUG 才有這個區塊）：不經過 Google，直接用信箱登入
