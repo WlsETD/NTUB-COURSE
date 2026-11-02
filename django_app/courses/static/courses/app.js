@@ -653,7 +653,7 @@
   $("ttDlg").addEventListener("click",function(e){if(e.target!==this)return;var r=this.getBoundingClientRect();
     if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.close("keep")});
   // 點課表的空格：課程清單只留那個時段有上課的課（不分類別），再點一次同一格取消
-  var MOBILE=window.matchMedia&&matchMedia("(max-width:720px), (max-width:1366px) and (pointer:coarse)");
+  var MOBILE=window.matchMedia&&matchMedia("(max-width:960px), (max-width:1366px) and (pointer:coarse)");
   function pickSlot(sl){
     var same=state.slot&&state.slot[0]===sl[0]&&state.slot[1]===sl[1];
     state.slot=same?null:sl;renderChips();renderTT();renderList(true);
