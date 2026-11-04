@@ -224,8 +224,8 @@ def main():
         view = {"viewport": {"width": w, "height": h}}
     else:  # 全螢幕：kiosk 模式不會跳出「按 F11 結束全螢幕」的提示
         w, h = screen_size()
-        # 縮放固定 1 倍：網頁用螢幕的實際像素排版（2560×1440 螢幕就是 2560×1440）
-        launch_args = ["--kiosk", "--start-fullscreen", "--force-device-scale-factor=1"]
+        # 網頁縮放用預設的 100%（跟著 Windows 的顯示設定）
+        launch_args = ["--kiosk", "--start-fullscreen"]
         view = {"no_viewport": True}
 
     print(f"畫面大小：{w}×{h}{'（全螢幕）' if not args.size else ''}")
