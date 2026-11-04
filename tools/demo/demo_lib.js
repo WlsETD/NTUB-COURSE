@@ -2,7 +2,11 @@
 // run_demo.py 用 add_init_script 注入，每次換頁都會重新載入；速度由 window.DEMO_SPEED 控制。
 (function () {
   if (window.demo) return;
-  if (window.top !== window.self) return; // 裝置預覽的 iframe 裡不放游標和字幕，由外層頁面操作
+  if (window.top !== window.self) { // 裝置預覽的 iframe 裡不放游標和字幕，由外層頁面操作；只藏記憶體模式橫幅
+    const hide = () => document.querySelectorAll('.mem-banner').forEach(b => (b.style.display = 'none'));
+    if (document.body) hide(); else document.addEventListener('DOMContentLoaded', hide);
+    return;
+  }
   const SPEED = window.DEMO_SPEED || 1;
   const sleep = ms => new Promise(r => setTimeout(r, ms / SPEED));
   const ease = t => (t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
@@ -123,6 +127,18 @@
     if (!o) throw new Error('demo: 選單沒有 ' + match);
     s.value = o.value; s.dispatchEvent(new Event('change', { bubbles: true })); await sleep(700);
   }
+  // 字幕位置：預設在底部置中；手機預覽時改放到手機外框左邊，才不會遮住底部導覽列
+  function capAt(where) {
+    const ph = where === 'phone' && document.querySelector('.phone-view .phone');
+    if (ph) {
+      const r = ph.getBoundingClientRect();
+      Object.assign(cap.style, { left: 'auto', right: (innerWidth - r.left + 48) + 'px', bottom: 'auto', top: '50%',
+        transform: 'translateY(-50%)', maxWidth: Math.max(320, r.left - 96) + 'px', textAlign: 'left' });
+    } else {
+      Object.assign(cap.style, { left: '50%', right: 'auto', bottom: '36px', top: 'auto',
+        transform: 'translateX(-50%)', maxWidth: '90vw', textAlign: 'center' });
+    }
+  }
   async function say(t, ms = 2200) { cap.innerHTML = t; cap.style.opacity = '1'; await sleep(ms); }
   function hush() { cap.style.opacity = '0'; }
   async function until(fn, ms = 30000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { const v = fn(); if (v) return v; await new Promise(r => setTimeout(r, 250)); } return null; }
@@ -134,6 +150,6 @@
   function courseBtn(name, re = /^(登記|加選)$/) { const a = course(name); return a && [...a.querySelectorAll('button')].find(b => re.test(b.textContent.trim())); }
   function block(name) { return [...document.querySelectorAll('#tt .blk')].find(b => b.textContent.includes(name)) || null; }
 
-  window.demo = { moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
+  window.demo = { capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
   if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 })();

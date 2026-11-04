@@ -155,8 +155,11 @@ SEG_RESULT = """async () => { const d = demo;
 
 SEG_MOBILE = """async () => { const d = demo;
   await d.until(() => d.$q('#card:not([hidden])'), 5000); await d.sleep(500);
+  // 手機預覽用預設外觀：清掉前面示範時切換的深色模式和主題色
+  for (const k of ['cs-theme', 'cs-accent', 'cs-accent-hex', 'cs-lang']) { try { localStorage.removeItem(k); } catch (e) {} }
   await d.click('#devbtn'); await d.say('右下角浮動按鈕：選擇預覽裝置（iPhone、Android、iPad）', 2600);
   await d.click('text:#devmenu button|iPhone 16'); d.$q('#devmenu').hidden = true;
+  await d.sleep(600); d.capAt('phone');
   const login = await d.until(() => { const n = d.$q('frame:[data-dev="%s"]'); return n && n.offsetParent && n; }, 15000);
   await d.say('手機和平板版面相同，同一個網址直接切換', 2400);
   await d.click(login);
@@ -222,10 +225,10 @@ def main():
         w, h = map(int, args.size.lower().split("x"))
         launch_args = [f"--window-size={w},{h + 90}"]
         view = {"viewport": {"width": w, "height": h}}
-    else:  # 全螢幕：kiosk 模式不會跳出「按 F11 結束全螢幕」的提示
-        w, h = screen_size()
-        # 網頁縮放用預設的 100%（跟著 Windows 的顯示設定）
-        launch_args = ["--kiosk", "--start-fullscreen"]
+    else:  # 全螢幕：開好視窗後再用 DevTools 協定切成全螢幕（等於按 F11）
+        # Playwright 底下 --kiosk／--start-fullscreen 不會真的全螢幕，視窗只有半個螢幕，網站會變成手機版
+        w, h = screen_size()  # 實際解析度，錄影用；網頁縮放維持預設（跟著 Windows 的顯示設定）
+        launch_args = ["--window-position=0,0"]
         view = {"no_viewport": True}
 
     print(f"畫面大小：{w}×{h}{'（全螢幕）' if not args.size else ''}")
@@ -244,6 +247,12 @@ def main():
             ctx.add_init_script(f"window.DEMO_SPEED={args.speed};\n{LIB}")
             page = ctx.new_page()
             page.set_default_timeout(60000)
+            if not args.size:
+                cdp = ctx.new_cdp_session(page)
+                win = cdp.send("Browser.getWindowForTarget")["windowId"]
+                cdp.send("Browser.setWindowBounds", {"windowId": win, "bounds": {"windowState": "fullscreen"}})
+                page.wait_for_timeout(800)
+                print("網頁大小：{}×{}（縮放 {:.0%}）".format(*page.evaluate("[innerWidth, innerHeight, devicePixelRatio]")))
 
             def run(js):
                 try:
