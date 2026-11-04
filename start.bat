@@ -30,7 +30,13 @@ goto fail
 
 rem ---------------------------------------------------------------
 :django
-where uv >nul 2>nul || (echo 找不到 uv，請先安裝：https://docs.astral.sh/uv/ & goto fail)
+where uv >nul 2>nul && goto has_uv
+echo 找不到 uv，正在自動安裝（https://docs.astral.sh/uv/）...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://astral.sh/uv/install.ps1 | iex" || goto fail
+rem 安裝程式把 uv 放在 %USERPROFILE%\.local\bin，這個視窗的 PATH 還沒更新，手動補上
+set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+where uv >nul 2>nul || (echo uv 安裝失敗，請手動安裝後再試。 & goto fail)
+:has_uv
 cd django_app
 if not exist ".env" (
   copy /y ".env.example" ".env" >nul || goto fail
