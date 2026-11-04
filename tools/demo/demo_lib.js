@@ -2,11 +2,12 @@
 // run_demo.py 用 add_init_script 注入，每次換頁都會重新載入；速度由 window.DEMO_SPEED 控制。
 (function () {
   if (window.demo) return;
+  if (window.top !== window.self) return; // 裝置預覽的 iframe 裡不放游標和字幕，由外層頁面操作
   const SPEED = window.DEMO_SPEED || 1;
   const sleep = ms => new Promise(r => setTimeout(r, ms / SPEED));
   const ease = t => (t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   let c, cap, x, y;
-  const HOT = [44, 26]; // 游標的點擊點：貓兩眼中間（以 62×38 的圖算）
+  const HOT = [5, 2]; // 游標的點擊點：箭頭尖端
 
   function mount() {
     document.querySelectorAll('.mem-banner').forEach(b => (b.style.display = 'none'));
@@ -16,18 +17,23 @@
     font.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap';
     document.head.appendChild(font);
     c = document.createElement('div');
-    c.innerHTML = '<svg width="62" height="38" viewBox="0 0 26 16" shape-rendering="crispEdges"><path d="M15 2h1v1h-1zM23 2h1v1h-1zM14 3h2v1h-2zM22 3h2v1h-2zM13 4h2v1h-2zM23 4h1v1h-1zM14 11h3v1h-3zM21 11h3v1h-3z" fill="#fff"/><path d="M15 0h1v1h-1zM23 0h1v1h-1zM14 1h3v1h-3zM22 1h3v1h-3zM13 2h2v1h-2zM16 2h1v1h-1zM21 2h2v1h-2zM24 2h1v1h-1zM12 3h2v1h-2zM16 3h2v1h-2zM20 3h2v1h-2zM24 3h1v1h-1zM11 4h2v1h-2zM15 4h8v1h-8zM24 4h1v1h-1zM9 5h16v1h-16zM8 6h17v1h-17zM7 7h18v1h-18zM7 8h18v1h-18zM7 9h19v1h-19zM1 10h5v1h-5zM7 10h19v1h-19zM0 11h14v1h-14zM17 11h4v1h-4zM24 11h2v1h-2zM0 12h26v1h-26zM0 13h3v1h-3zM6 13h20v1h-20zM9 14h16v1h-16zM11 15h13v1h-13z" fill="#111"/></svg>'; // 像素小黑貓（26×16 格）
-    Object.assign(c.style, { position: 'fixed', left: '0', top: '0', zIndex: 2147483647, pointerEvents: 'none', filter: 'drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 2px 3px rgba(0,0,0,.35))' });
-    document.body.appendChild(c);
+    c.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24"><path d="M4 2l15 11.5-6.6.9 3.9 7.6-2.9 1.4-3.8-7.6L4 20.5z" fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>'; // 黑色箭頭游標
+    c.popover = 'manual'; // 放進瀏覽器的最上層（top layer），彈出的 <dialog> 也蓋不住
+    Object.assign(c.style, { position: 'fixed', inset: 'auto', left: '0', top: '0', margin: '0', padding: '0', border: '0', background: 'transparent', overflow: 'visible', zIndex: 2147483647, pointerEvents: 'none', filter: 'drop-shadow(0 2px 3px rgba(0,0,0,.35))' });
     cap = document.createElement('div');
+    cap.popover = 'manual';
     Object.assign(cap.style, {
-      position: 'fixed', left: '50%', bottom: '36px', transform: 'translateX(-50%)', zIndex: 2147483645, pointerEvents: 'none',
+      position: 'fixed', inset: 'auto', left: '50%', bottom: '36px', margin: '0', border: '0', transform: 'translateX(-50%)', zIndex: 2147483647, pointerEvents: 'none',
       background: 'rgba(0,0,0,.5)', color: '#fff', padding: '16px 30px', borderRadius: '20px',
       font: '700 30px "Noto Sans TC",sans-serif', maxWidth: '90vw', textAlign: 'center', lineHeight: '1.45',
       textShadow: '0 1px 3px rgba(0,0,0,.6)',
       transition: 'opacity .3s', opacity: '0',
     });
     document.body.appendChild(cap);
+    document.body.appendChild(c); // 游標最後加入，永遠在字幕上面
+    raise();
+    // 頁面打開 <dialog> 時，把字幕和游標重新拉到最上層
+    new MutationObserver(raise).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['open'] });
     const st = document.createElement('style');
     st.textContent = '@keyframes demoRip{from{transform:translate(-50%,-50%) scale(.2);opacity:.9}to{transform:translate(-50%,-50%) scale(1);opacity:0}}';
     document.head.appendChild(st);
@@ -35,6 +41,11 @@
     try { p = JSON.parse(sessionStorage.demoPos || 'null'); } catch (e) {}
     [x, y] = p || [innerWidth * .6, innerHeight * .4];
     c.style.transform = `translate(${x - HOT[0]}px,${y - HOT[1]}px)`;
+  }
+
+  // top layer 裡後顯示的在上面：先字幕、再游標
+  function raise() {
+    for (const el of [cap, c]) { if (!el) continue; try { if (el.matches(':popover-open')) el.hidePopover(); el.showPopover(); } catch (e) {} }
   }
 
   async function moveTo(tx, ty, ms = 750) {
@@ -50,21 +61,38 @@
   }
 
   // "選擇器" 或 "text:選擇器|文字"（找第一個看得到、文字包含「文字」的元素）
+  // 前面加 "frame:" 代表找裝置預覽 iframe 裡面的元素
   function $q(el) {
     if (typeof el !== 'string') return el;
+    let doc = document;
+    if (el.startsWith('frame:')) {
+      const f = document.querySelector('.phone-view iframe');
+      doc = f && f.contentDocument; el = el.slice(6);
+      if (!doc || !doc.body) return null;
+    }
     if (el.startsWith('text:')) {
       const [sel, txt] = el.slice(5).split('|');
-      return [...document.querySelectorAll(sel)].find(e => e.offsetParent && e.textContent.trim().includes(txt)) || null;
+      return [...doc.querySelectorAll(sel)].find(e => e.offsetParent && e.textContent.trim().includes(txt)) || null;
     }
-    return document.querySelector(el);
+    return doc.querySelector(el);
+  }
+
+  // 元素在外層畫面上的位置（iframe 裡的元素要加上 iframe 的位置和縮放）
+  function rectOf(node) {
+    const r = node.getBoundingClientRect();
+    if (node.ownerDocument === document) return r;
+    const f = [...document.querySelectorAll('iframe')].find(f => f.contentDocument === node.ownerDocument);
+    const fr = f.getBoundingClientRect(), k = fr.width / (f.clientWidth || fr.width);
+    return { left: fr.left + r.left * k, top: fr.top + r.top * k, width: r.width * k, height: r.height * k, bottom: fr.top + r.bottom * k };
   }
 
   async function to(el) {
-    const node = $q(el);
+    const node = typeof el === 'string' ? await until(() => $q(el), 3000) : el; // 等元素出現（對話框動畫等）
     if (!node) throw new Error('demo: 找不到 ' + el);
-    const r0 = node.getBoundingClientRect();
-    if (r0.top < 70 || r0.bottom > innerHeight - 130) { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); await sleep(800); }
-    const r = node.getBoundingClientRect();
+    const r0 = node.getBoundingClientRect(), vh = node.ownerDocument.defaultView.innerHeight;
+    const inFrame = node.ownerDocument !== document;
+    if (r0.top < (inFrame ? 0 : 70) || r0.bottom > vh - (inFrame ? 0 : 130)) { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); await sleep(800); }
+    const r = rectOf(node);
     await moveTo(r.left + Math.min(r.width / 2, 60), r.top + r.height / 2);
     return node;
   }
@@ -72,7 +100,8 @@
   function ripple() {
     const d = document.createElement('div');
     Object.assign(d.style, { position: 'fixed', left: x + 'px', top: y + 'px', width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(26,115,232,.45)', zIndex: 2147483646, pointerEvents: 'none', animation: `demoRip ${.5 / SPEED}s ease-out forwards` });
-    document.body.appendChild(d);
+    d.popover = 'manual'; Object.assign(d.style, { inset: 'auto', margin: '0', border: '0', padding: '0' });
+    document.body.appendChild(d); try { d.showPopover(); } catch (e) {} raise();
     setTimeout(() => d.remove(), 600);
   }
 

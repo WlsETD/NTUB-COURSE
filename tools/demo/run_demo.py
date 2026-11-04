@@ -145,13 +145,30 @@ SEG_TEACHER = """async () => { const d = demo;
 
 SEG_LOGIN_STUDENT = """async () => { const d = demo; await d.press('[data-dev="%s"]'); return 'student login'; }""" % STUDENT
 
-SEG_END = """async () => { const d = demo;
+SEG_RESULT = """async () => { const d = demo;
   await d.sleep(600);
   const b = d.block('虛擬化'); if (b) { await d.to(b); await d.say('課表已出現「虛擬化技術」，標示「申請通過」', 3200); }
+  await d.top(); await d.say('最後看手機版：登入頁右下角的「預覽裝置」按鈕', 2400);
+  await d.press('#logoutBtn');
+  return 'result approved=' + !!(b && /申請通過/.test(b.innerText));
+}"""
+
+SEG_MOBILE = """async () => { const d = demo;
+  await d.until(() => d.$q('#card:not([hidden])'), 5000); await d.sleep(500);
+  await d.click('#devbtn'); await d.say('右下角浮動按鈕：選擇預覽裝置（iPhone、Android、iPad）', 2600);
+  await d.click('text:#devmenu button|iPhone 16'); d.$q('#devmenu').hidden = true;
+  const login = await d.until(() => { const n = d.$q('frame:[data-dev="%s"]'); return n && n.offsetParent && n; }, 15000);
+  await d.say('手機和平板版面相同，同一個網址直接切換', 2400);
+  await d.click(login);
+  const nav = await d.until(() => { const n = d.$q('frame:.mnav [data-mv="table"]'); return n && n.offsetParent && n; }, 15000);
+  await d.sleep(800); await d.say('手機版：底部導覽列切換「課程／課表／進度」', 2600);
+  await d.click(nav); await d.say('課表', 1800);
+  await d.click('frame:.mnav [data-mv="me"]'); await d.say('學分與畢業進度', 1800);
+  await d.click('frame:.mnav [data-mv="list"]'); await d.say('課程清單', 1600);
   await d.say('結語：一個畫面選完課；衝堂、學分、換課先幫你檢查；<br>AI 與線上加簽解決「不知道選什麼」和「選不到」', 4500);
   d.hush(); await d.sleep(800);
-  return 'end approved=' + !!(b && /申請通過/.test(b.innerText));
-}"""
+  return 'mobile ok';
+}""" % STUDENT
 
 
 def start_server(port):
@@ -181,12 +198,16 @@ def stop_server(proc):
 
 
 def screen_size():
-    """主螢幕大小（CSS 像素，已考慮 Windows 縮放）。"""
+    """主螢幕的實際解析度（例如 2560×1440），不受 Windows 顯示縮放影響。"""
     if os.name == "nt":
         import ctypes
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except Exception:
+            ctypes.windll.user32.SetProcessDPIAware()
         m = ctypes.windll.user32.GetSystemMetrics
         return m(0), m(1)
-    return 1920, 1080
+    return 2560, 1440
 
 
 def main():
@@ -203,9 +224,11 @@ def main():
         view = {"viewport": {"width": w, "height": h}}
     else:  # 全螢幕：kiosk 模式不會跳出「按 F11 結束全螢幕」的提示
         w, h = screen_size()
-        launch_args = ["--kiosk", "--start-fullscreen"]
+        # 縮放固定 1 倍：網頁用螢幕的實際像素排版（2560×1440 螢幕就是 2560×1440）
+        launch_args = ["--kiosk", "--start-fullscreen", "--force-device-scale-factor=1"]
         view = {"no_viewport": True}
 
+    print(f"畫面大小：{w}×{h}{'（全螢幕）' if not args.size else ''}")
     print(f"啟動 Django（記憶體模式）：{base}")
     server = start_server(args.port)
     t0 = time.time()
@@ -223,7 +246,14 @@ def main():
             page.set_default_timeout(60000)
 
             def run(js):
-                print(" ", page.evaluate(js), f"({time.time() - t0:.0f}s)")
+                try:
+                    print(" ", page.evaluate(js), f"({time.time() - t0:.0f}s)")
+                except Exception:
+                    out.mkdir(exist_ok=True)
+                    shot = out / "error.png"
+                    page.screenshot(path=str(shot))
+                    print(f"出錯了，畫面存在 {shot}")
+                    raise
 
             def run_then_nav(js, url_part):
                 # 最後一個動作是 press()：游標動畫做完，再由 Playwright 真的點下去並等換頁
@@ -242,7 +272,8 @@ def main():
             run_then_nav(SEG_LOGIN_TEACHER, "/teacher/")
             run_then_nav(SEG_TEACHER, f"{base}/")
             run_then_nav(SEG_LOGIN_STUDENT, "/app/")
-            run(SEG_END)
+            run_then_nav(SEG_RESULT, f"{base}/")
+            run(SEG_MOBILE)
 
             video = page.video
             ctx.close()
