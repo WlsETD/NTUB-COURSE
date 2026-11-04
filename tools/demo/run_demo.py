@@ -26,7 +26,6 @@ HERE = Path(__file__).resolve().parent
 LIB = (HERE / "demo_lib.js").read_text(encoding="utf-8")
 STUDENT = "11446001@ntub.edu.tw"
 TEACHER = "sckuai@ntub.edu.tw"
-MUSIC = "https://www.youtube.com/watch?v=CLeZyIID9Bo"  # Chill Lofi Mix；這支影片不允許嵌入，所以直接開 YouTube 頁面播
 
 # ---------- 每一段的瀏覽器動作（在頁面裡執行，回傳一行紀錄） ----------
 
@@ -201,26 +200,6 @@ def stop_server(proc):
             proc.terminate()
 
 
-def start_music(browser, url, volume):
-    """另開一個小視窗播 YouTube 背景音樂，調好音量後縮到最小；回傳 context，關掉它音樂就停。"""
-    ctx = browser.new_context(locale="zh-TW", viewport={"width": 640, "height": 360})
-    page = ctx.new_page()
-    try:
-        page.goto(url)
-        page.wait_for_function("() => { const v = document.querySelector('video'); return v && v.currentTime > 0; }", timeout=30000)
-        page.evaluate("""v => { const p = document.querySelector('#movie_player'); if (p && p.setVolume) { p.unMute(); p.setVolume(v); }
-                                const el = document.querySelector('video'); el.muted = false; el.volume = v / 100; }""", volume)
-        cdp = ctx.new_cdp_session(page)
-        win = cdp.send("Browser.getWindowForTarget")["windowId"]
-        cdp.send("Browser.setWindowBounds", {"windowId": win, "bounds": {"windowState": "minimized"}})
-        print(f"背景音樂：{page.title()}（音量 {volume}）")
-    except Exception as e:
-        print(f"背景音樂播放失敗，略過：{e}")
-        ctx.close()
-        return None
-    return ctx
-
-
 def screen_size():
     """主螢幕的實際解析度（例如 2560×1440），不受 Windows 顯示縮放影響。"""
     if os.name == "nt":
@@ -239,8 +218,7 @@ def main():
     ap.add_argument("--speed", type=float, default=1, help="播放速度倍數，例如 3 = 三倍速")
     ap.add_argument("--port", type=int, default=8030)
     ap.add_argument("--record", action="store_true", help="另存影片到 tools/demo/out/")
-    ap.add_argument("--music", default=MUSIC, help="背景音樂的 YouTube 網址；--music none 不播")
-    ap.add_argument("--music-volume", type=int, default=25, help="背景音樂音量 0～100（預設 25）")
+    ap.add_argument("--countdown", type=int, default=3, help="開始前倒數幾秒（給你按 OBS 錄影），0 = 不倒數")
     ap.add_argument("--size", help="改用視窗模式並指定大小，例如 1440x810；不指定就是全螢幕")
     args = ap.parse_args()
     base = f"http://127.0.0.1:{args.port}"
@@ -263,7 +241,6 @@ def main():
             # 允許自動播放，點擊音效才放得出來（Playwright 錄影本身不含聲音，要聲音請用 OBS 錄）
             browser = p.chromium.launch(headless=False, args=launch_args + ["--autoplay-policy=no-user-gesture-required"],
                                         ignore_default_args=["--mute-audio"])  # Playwright 預設靜音
-            music = start_music(browser, args.music, args.music_volume) if args.music.lower() != "none" else None
             opts = {**view, "locale": "zh-TW"}
             out = HERE / "out"
             if args.record:
@@ -273,13 +250,24 @@ def main():
             ctx.add_init_script(f"window.DEMO_SPEED={args.speed};\n{LIB}")
             page = ctx.new_page()
             page.set_default_timeout(60000)
-            page.bring_to_front()  # 音樂視窗在背景，Demo 視窗放最前面
-            if not args.size:
-                cdp = ctx.new_cdp_session(page)
-                win = cdp.send("Browser.getWindowForTarget")["windowId"]
-                cdp.send("Browser.setWindowBounds", {"windowId": win, "bounds": {"windowState": "fullscreen"}})
+            cdp = ctx.new_cdp_session(page)
+            win = cdp.send("Browser.getWindowForTarget")["windowId"]
+
+            def focus():
+                # 把 Demo 網站視窗拉到最前面（全螢幕模式就重新切一次全螢幕）
+                page.bring_to_front()
+                if not args.size:
+                    cdp.send("Browser.setWindowBounds", {"windowId": win, "bounds": {"windowState": "normal"}})
+                    cdp.send("Browser.setWindowBounds", {"windowId": win, "bounds": {"windowState": "fullscreen"}})
                 page.wait_for_timeout(800)
-                print("網頁大小：{}×{}（縮放 {:.0%}）".format(*page.evaluate("[innerWidth, innerHeight, devicePixelRatio]")))
+
+            focus()
+            page.goto(base + "/")
+            page.wait_for_load_state("networkidle")
+            print("網頁大小：{}×{}（縮放 {:.0%}）".format(*page.evaluate("[innerWidth, innerHeight, devicePixelRatio]")))
+            if args.countdown > 0:  # 倒數給你時間按 OBS 錄影
+                page.evaluate("""async n => { for (let i = n; i > 0; i--) { demo.cap.innerHTML = '準備錄影… ' + i; demo.cap.style.opacity = '1';
+                                   await new Promise(r => setTimeout(r, 1000)); } demo.hush(); await new Promise(r => setTimeout(r, 400)); }""", args.countdown)
 
             def run(js):
                 try:
@@ -299,8 +287,6 @@ def main():
                     page.click(selector)
                 page.wait_for_load_state("networkidle")
 
-            page.goto(base + "/")
-            page.wait_for_load_state("networkidle")
             run_then_nav(SEG_OPEN, "/app/")
             for seg in (SEG_FIND, SEG_PLAN, SEG_CREDIT, SEG_AI):
                 run(seg)
@@ -312,9 +298,6 @@ def main():
             run(SEG_MOBILE)
 
             video = page.video
-            if music:
-                music.close()  # Demo 結束，音樂跟著停
-                music = None
             ctx.close()
             browser.close()
             if video:

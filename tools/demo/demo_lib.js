@@ -167,6 +167,20 @@
     s.value = o.value; s.dispatchEvent(new Event('change', { bubbles: true })); await sleep(700);
   }
   // 重點特寫：把目標移到畫面中間並放大，四周變暗、目標加外框；字幕講完再縮回來
+  // 元素實際看得到的範圍：扣掉被捲動區塊（overflow）和畫面邊緣裁掉的部分
+  function visibleRect(node) {
+    const r = node.getBoundingClientRect();
+    let L = Math.max(r.left, 0), T = Math.max(r.top, 0), R = Math.min(r.right, innerWidth), B = Math.min(r.bottom, innerHeight);
+    for (let p = node.parentElement; p && p !== document.body; p = p.parentElement) {
+      const cs = getComputedStyle(p);
+      if (/(auto|scroll|hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) {
+        const q = p.getBoundingClientRect();
+        L = Math.max(L, q.left); T = Math.max(T, q.top); R = Math.min(R, q.right); B = Math.min(B, q.bottom);
+      }
+    }
+    return { left: L, top: T, width: Math.max(0, R - L), height: Math.max(0, B - T) };
+  }
+
   // el 可以是選擇器、元素，或回傳元素的函式（清單會重畫時用函式，每次重新找）
   async function spot(el, text, ms = 3000, zoom = 1.6) {
     const get = () => (typeof el === 'function' ? el() : typeof el === 'string' ? $q(el) : el);
@@ -177,14 +191,17 @@
     node = get() || node;
     if (!node.isConnected) return say(text, ms);
     let box = node; while (box.parentElement && box.parentElement !== document.body) box = box.parentElement;
-    const r = node.getBoundingClientRect(), b = box.getBoundingClientRect();
-    const k = Math.max(1, Math.min(zoom, (innerWidth * .8) / r.width, (innerHeight * .55) / r.height));
+    const r = visibleRect(node), b = box.getBoundingClientRect();
+    // 固定位置的面板（AI 面板）和彈出的 <dialog> 有自己的定位與動畫，搬不動：原地加暗框，不放大
+    const pinned = box.tagName === 'DIALOG' || getComputedStyle(box).position === 'fixed';
+    const k = pinned ? 1 : Math.max(1, Math.min(zoom, (innerWidth * .8) / r.width, (innerHeight * .55) / r.height));
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const dur = .6 / SPEED;
-    Object.assign(box.style, { transformOrigin: `${cx - b.left}px ${cy - b.top}px`, transition: `transform ${dur}s cubic-bezier(.2,.8,.2,1)`, willChange: 'transform' });
+    if (!pinned) Object.assign(box.style, { transformOrigin: `${cx - b.left}px ${cy - b.top}px`, transition: `transform ${dur}s cubic-bezier(.2,.8,.2,1)`, willChange: 'transform' });
     sfx('whoosh');
-    box.style.transform = `translate(${innerWidth / 2 - cx}px,${innerHeight * .42 - cy}px) scale(${k})`;
-    const tx = innerWidth / 2, ty = innerHeight * .42, w = r.width * k + 24, h = r.height * k + 24;
+    const w = r.width * k + 24, h = r.height * k + 24;
+    const tx = pinned ? cx : innerWidth / 2, ty = pinned ? cy : Math.max(innerHeight * .42, h / 2 + 16); // 太高的目標往下移，上緣不要超出畫面
+    if (!pinned) box.style.transform = `translate(${tx - cx}px,${ty - cy}px) scale(${k})`;
     const ring = document.createElement('div');
     ring.popover = 'manual';
     Object.assign(ring.style, { position: 'fixed', inset: 'auto', margin: '0', padding: '0', border: '0', background: 'transparent', pointerEvents: 'none',
@@ -195,7 +212,7 @@
     await sleep(80); ring.style.opacity = '1';
     await sleep(650);
     await say(text, ms);
-    sfx('whooshOut'); ring.style.opacity = '0'; box.style.transform = '';
+    sfx('whooshOut'); ring.style.opacity = '0'; if (!pinned) box.style.transform = '';
     await sleep(650);
     ring.remove(); box.style.willChange = ''; box.style.transition = '';
   }
@@ -223,6 +240,6 @@
   function courseBtn(name, re = /^(登記|加選)$/) { const a = course(name); return a && [...a.querySelectorAll('button')].find(b => re.test(b.textContent.trim())); }
   function block(name) { return [...document.querySelectorAll('#tt .blk')].find(b => b.textContent.includes(name)) || null; }
 
-  window.demo = { sfx, spot, capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
+  window.demo = { get cap() { return cap; }, sfx, spot, capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
   if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 })();
