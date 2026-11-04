@@ -39,8 +39,8 @@ SEG_OPEN = """async () => { const d = demo;
 
 SEG_FIND = """async () => { const d = demo, log = [];
   await d.sleep(600);
-  await d.to('#who'); await d.say('學號 11446001 → 114 入學・四技資管・大二，系統自動判斷', 3200);
-  await d.to('#doneLine'); await d.say('本班必修已自動帶入課表，不需要可以自己退', 3000);
+  await d.spot('#who', '學號 11446001 → 114 入學・四技資管・大二，系統自動判斷', 3200);
+  await d.spot('#doneLine', '本班必修已自動帶入課表，不需要可以自己退', 3000);
   await d.type('#q', '程式'); await d.say('搜尋課名、老師或課號', 1800);
   await d.click('#noClash'); await d.say('勾「只看不衝堂」，衝堂的課直接隱藏', 2600);
   await d.clear('#q'); await d.click('#noClash');
@@ -54,7 +54,7 @@ SEG_PLAN = """async () => { const d = demo, log = [];
   await d.type('#q', '網站應用程式設計'); await d.sleep(500);
   await d.click(d.courseBtn('網站應用程式設計')); await d.say('加選成功，右下角提示目前名額', 2600); log.push('add');
   await d.clear('#q'); await d.type('#q', '程式設計(一)'); await d.sleep(500);
-  const b = d.courseBtn('程式設計(一)'); await d.to(b); await d.say('這門課跟「資料結構」衝堂', 2200);
+  const b = d.courseBtn('程式設計(一)'); await d.spot(() => d.course('程式設計(一)'), '這門課跟「資料結構」衝堂', 2400);
   await d.click(b); await d.say('系統直接擋下，並說明衝堂的是哪一門', 2800); log.push('clash');
   await d.clear('#q'); await d.sleep(300);
   await d.click('#tt .cell[data-slot="3,6"]'); await d.say('點課表的空堂（週三第 6 節）→ 清單只剩這個時段能選的課', 3200);
@@ -66,14 +66,14 @@ SEG_PLAN = """async () => { const d = demo, log = [];
 
 SEG_CREDIT = """async () => { const d = demo, log = [];
   await d.top(); await d.say('學分與換課', 2000);
-  await d.to('#summary'); await d.say('本學期學分：下限 9、上限 25，即時顯示「可再選幾學分」', 3200);
+  await d.spot('#summary', '本學期學分：下限 9、上限 25，即時顯示「可再選幾學分」', 3200);
   const ph = d.$q('text:#summary *|階段一'); if (ph) { await d.to(ph); await d.say('選課階段：登記中可超額，截止後抽籤；加退選時剩餘名額先搶先贏', 3500); }
   const basic = d.$q('#basic summary') || d.$q('#basic');
   if (basic) { await d.click(basic); await d.say('選課基本資料：各類可加選的科目數', 2800); await d.click(basic); log.push('basic'); }
   await d.click(d.block('資料結構')); await d.click('text:#ttDlg button|安全換課');
   await d.say('安全換課：只列出時段相同、不衝堂、還有名額的替代課', 3000);
   await d.choose('#swapPick', '程式設計(一)');
-  await d.to('#swapPreview'); await d.say('確認前先算好換課後的學分，必修也會另外提醒', 3000);
+  await d.spot('#swapPreview', '確認前先算好換課後的學分，必修也會另外提醒', 3000);
   await d.to('#swapConfirm'); await d.say('換成功前原本的課不會被退掉，不會兩頭落空', 2800);
   await d.click('#swapConfirm'); await d.sleep(1200); log.push('swap');
   return 'credit ' + log + ' blocks=' + [...document.querySelectorAll('#tt .blk b')].map(b => b.textContent).join('/');
@@ -92,7 +92,7 @@ SEG_AI = """async () => { const d = demo;
     if (r && r !== 'fail') break;
   }
   if (!d.$q('#aiAll')) return 'ai FAILED: ' + d.$q('#aiStatus').textContent;
-  await d.to('#aiOut'); await d.say('AI 推薦 3–6 門課，每門附理由，而且彼此不衝堂', 3200);
+  await d.spot('#aiOut', 'AI 推薦 3–6 門課，每門附理由，而且彼此不衝堂', 3200);
   await d.click('#aiAll'); await d.say('按「全部加入」，課直接排進課表', 2600);
   await d.click('#aiClose'); await d.to('#tt'); await d.say('回到課表：新課已排進去', 2200);
   await d.top(); await d.click('#palBtn');
@@ -118,7 +118,7 @@ SEG_APPLY = """async () => { const d = demo;
   const k = d.$q('#applicationKind'); k.value = 'add'; k.dispatchEvent(new Event('change', { bubbles: true }));
   await d.type('#applicationReason', '想提早修虛擬化技術，準備雲端相關的專題', 90);
   await d.click('#applicationSubmit'); await d.sleep(1200);
-  await d.to('#applicationHistory'); await d.say('送出後狀態顯示「審核中」', 2600);
+  await d.spot('#applicationHistory', '送出後狀態顯示「審核中」', 2600);
   await d.top(); await d.say('切換到老師端：登出 → 用老師帳號登入', 2000);
   await d.press('#logoutBtn');
   return 'apply ' + d.$q('#applicationMessage').innerText;
@@ -137,7 +137,7 @@ SEG_TEACHER = """async () => { const d = demo;
   await d.top();
   await d.type('textarea[id^="review-note-"]', '同意加簽，請注意先修內容', 90);
   await d.click('[data-decision="approve"]'); await d.sleep(1500);
-  await d.say('按「通過並加入課表」→ 學生的課表直接出現這門課', 2800);
+  await d.spot('[data-request-id]', '按「通過並加入課表」→ 學生的課表直接出現這門課', 3000);
   await d.top(); await d.say('切回學生帳號看結果', 1600);
   await d.press('#logout');
   return 'review ' + (document.body.innerText.match(/教師回覆：[^\\n]*/) || [''])[0];
@@ -147,7 +147,7 @@ SEG_LOGIN_STUDENT = """async () => { const d = demo; await d.press('[data-dev="%
 
 SEG_RESULT = """async () => { const d = demo;
   await d.sleep(600);
-  const b = d.block('虛擬化'); if (b) { await d.to(b); await d.say('課表已出現「虛擬化技術」，標示「申請通過」', 3200); }
+  const b = d.block('虛擬化'); if (b) { await d.spot(b, '課表已出現「虛擬化技術」，標示「申請通過」', 3200); }
   await d.top(); await d.say('最後看手機版：登入頁右下角的「預覽裝置」按鈕', 2400);
   await d.press('#logoutBtn');
   return 'result approved=' + !!(b && /申請通過/.test(b.innerText));
@@ -237,7 +237,9 @@ def main():
     t0 = time.time()
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, args=launch_args)
+            # 允許自動播放，點擊音效才放得出來（Playwright 錄影本身不含聲音，要聲音請用 OBS 錄）
+            browser = p.chromium.launch(headless=False, args=launch_args + ["--autoplay-policy=no-user-gesture-required"],
+                                        ignore_default_args=["--mute-audio"])  # Playwright 預設靜音
             opts = {**view, "locale": "zh-TW"}
             out = HERE / "out"
             if args.record:

@@ -109,8 +109,22 @@
     setTimeout(() => d.remove(), 600);
   }
 
-  async function click(el) { const n = await to(el); await sleep(180); ripple(); await sleep(120); n.click(); await sleep(600); return n; }
-  async function press(el) { await to(el); await sleep(180); ripple(); await sleep(120); } // 只做動畫，真正的點擊交給 Playwright（會換頁的按鈕）
+  // 點擊音效：用 Web Audio 現場合成一聲短促的「喀」，不需要音效檔
+  let audio = null;
+  function tick() {
+    try {
+      audio = audio || new AudioContext();
+      const t = audio.currentTime, len = Math.floor(audio.sampleRate * .03);
+      const buf = audio.createBuffer(1, len, audio.sampleRate), ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
+      const src = audio.createBufferSource(); src.buffer = buf;
+      const bp = audio.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.2;
+      const g = audio.createGain(); g.gain.setValueAtTime(.9, t);
+      src.connect(bp).connect(g).connect(audio.destination); src.start(t);
+    } catch (e) {}
+  }
+  async function click(el) { const n = await to(el); await sleep(180); ripple(); tick(); await sleep(120); n.click(); await sleep(600); return n; }
+  async function press(el) { await to(el); await sleep(180); ripple(); tick(); await sleep(120); } // 只做動畫，真正的點擊交給 Playwright（會換頁的按鈕）
 
   // 打字前重新抓一次元素，避免頁面自動更新換掉輸入框
   async function type(sel, text, ms = 85) {
@@ -127,6 +141,39 @@
     if (!o) throw new Error('demo: 選單沒有 ' + match);
     s.value = o.value; s.dispatchEvent(new Event('change', { bubbles: true })); await sleep(700);
   }
+  // 重點特寫：把目標移到畫面中間並放大，四周變暗、目標加外框；字幕講完再縮回來
+  // el 可以是選擇器、元素，或回傳元素的函式（清單會重畫時用函式，每次重新找）
+  async function spot(el, text, ms = 3000, zoom = 1.6) {
+    const get = () => (typeof el === 'function' ? el() : typeof el === 'string' ? $q(el) : el);
+    let node = await until(get, 3000);
+    if (!node) throw new Error('demo: 找不到 ' + el);
+    if (node.ownerDocument !== document) { await to(node); return say(text, ms); } // iframe 裡的元素不放大
+    await to(node);
+    node = get() || node;
+    if (!node.isConnected) return say(text, ms);
+    let box = node; while (box.parentElement && box.parentElement !== document.body) box = box.parentElement;
+    const r = node.getBoundingClientRect(), b = box.getBoundingClientRect();
+    const k = Math.max(1, Math.min(zoom, (innerWidth * .8) / r.width, (innerHeight * .55) / r.height));
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const dur = .6 / SPEED;
+    Object.assign(box.style, { transformOrigin: `${cx - b.left}px ${cy - b.top}px`, transition: `transform ${dur}s cubic-bezier(.2,.8,.2,1)`, willChange: 'transform' });
+    box.style.transform = `translate(${innerWidth / 2 - cx}px,${innerHeight * .42 - cy}px) scale(${k})`;
+    const tx = innerWidth / 2, ty = innerHeight * .42, w = r.width * k + 24, h = r.height * k + 24;
+    const ring = document.createElement('div');
+    ring.popover = 'manual';
+    Object.assign(ring.style, { position: 'fixed', inset: 'auto', margin: '0', padding: '0', border: '0', background: 'transparent', pointerEvents: 'none',
+      left: tx - w / 2 + 'px', top: ty - h / 2 + 'px', width: w + 'px', height: h + 'px', borderRadius: '18px',
+      boxShadow: '0 0 0 4px rgba(255,255,255,.95), 0 0 0 200vmax rgba(10,14,22,.55)', opacity: '0', transition: `opacity ${dur}s` });
+    document.body.appendChild(ring); try { ring.showPopover(); } catch (e) {} raise();
+    moveTo(tx + w / 2 - 10, ty + h / 2 - 6, 600);
+    await sleep(80); ring.style.opacity = '1';
+    await sleep(650);
+    await say(text, ms);
+    ring.style.opacity = '0'; box.style.transform = '';
+    await sleep(650);
+    ring.remove(); box.style.willChange = ''; box.style.transition = '';
+  }
+
   // 字幕位置：預設在底部置中；手機預覽時改放到手機外框左邊，才不會遮住底部導覽列
   function capAt(where) {
     const ph = where === 'phone' && document.querySelector('.phone-view .phone');
@@ -150,6 +197,6 @@
   function courseBtn(name, re = /^(登記|加選)$/) { const a = course(name); return a && [...a.querySelectorAll('button')].find(b => re.test(b.textContent.trim())); }
   function block(name) { return [...document.querySelectorAll('#tt .blk')].find(b => b.textContent.includes(name)) || null; }
 
-  window.demo = { capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
+  window.demo = { spot, capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
   if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 })();
