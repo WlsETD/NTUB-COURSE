@@ -39,7 +39,8 @@ if not exist ".env" (
 echo [1/2] 安裝套件（uv sync）...
 uv sync || goto fail
 echo [2/2] 啟動 Django：http://127.0.0.1:8000  （按 Ctrl+C 停止）
-start "" "http://127.0.0.1:8000"
+rem 背景等 2 秒再開瀏覽器，讓伺服器先啟動
+start "" /b cmd /c "ping -n 3 127.0.0.1 >nul & start http://127.0.0.1:8000"
 uv run python manage.py runserver
 goto end
 
@@ -54,7 +55,8 @@ if not exist "node_modules" (
 )
 if "%PORT%"=="" set "PORT=3000"
 echo 啟動 Express：http://localhost:%PORT%  （按 Ctrl+C 停止）
-start "" "http://localhost:%PORT%"
+rem 背景等 2 秒再開瀏覽器，讓伺服器先啟動
+start "" /b cmd /c "ping -n 3 127.0.0.1 >nul & start http://localhost:%PORT%"
 node server.js
 goto end
 
