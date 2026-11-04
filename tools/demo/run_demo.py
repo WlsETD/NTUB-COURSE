@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 LIB = (HERE / "demo_lib.js").read_text(encoding="utf-8")
 STUDENT = "11446001@ntub.edu.tw"
 TEACHER = "sckuai@ntub.edu.tw"
+MUSIC = "https://www.youtube.com/watch?v=CLeZyIID9Bo"  # Chill Lofi Mix；這支影片不允許嵌入，所以直接開 YouTube 頁面播
 
 # ---------- 每一段的瀏覽器動作（在頁面裡執行，回傳一行紀錄） ----------
 
@@ -52,10 +53,10 @@ SEG_FIND = """async () => { const d = demo, log = [];
 SEG_PLAN = """async () => { const d = demo, log = [];
   await d.say('排課與檢查', 2000);
   await d.type('#q', '網站應用程式設計'); await d.sleep(500);
-  await d.click(d.courseBtn('網站應用程式設計')); await d.say('加選成功，右下角提示目前名額', 2600); log.push('add');
+  await d.click(d.courseBtn('網站應用程式設計')); d.sfx('ding'); await d.say('加選成功，右下角提示目前名額', 2600); log.push('add');
   await d.clear('#q'); await d.type('#q', '程式設計(一)'); await d.sleep(500);
   const b = d.courseBtn('程式設計(一)'); await d.spot(() => d.course('程式設計(一)'), '這門課跟「資料結構」衝堂', 2400);
-  await d.click(b); await d.say('系統直接擋下，並說明衝堂的是哪一門', 2800); log.push('clash');
+  await d.click(b); d.sfx('buzz'); await d.say('系統直接擋下，並說明衝堂的是哪一門', 2800); log.push('clash');
   await d.clear('#q'); await d.sleep(300);
   await d.click('#tt .cell[data-slot="3,6"]'); await d.say('點課表的空堂（週三第 6 節）→ 清單只剩這個時段能選的課', 3200);
   await d.click('text:#chips button|時段'); log.push('slot');
@@ -75,7 +76,7 @@ SEG_CREDIT = """async () => { const d = demo, log = [];
   await d.choose('#swapPick', '程式設計(一)');
   await d.spot('#swapPreview', '確認前先算好換課後的學分，必修也會另外提醒', 3000);
   await d.to('#swapConfirm'); await d.say('換成功前原本的課不會被退掉，不會兩頭落空', 2800);
-  await d.click('#swapConfirm'); await d.sleep(1200); log.push('swap');
+  await d.click('#swapConfirm'); d.sfx('ding'); await d.sleep(1200); log.push('swap');
   return 'credit ' + log + ' blocks=' + [...document.querySelectorAll('#tt .blk b')].map(b => b.textContent).join('/');
 }"""
 
@@ -93,7 +94,7 @@ SEG_AI = """async () => { const d = demo;
   }
   if (!d.$q('#aiAll')) return 'ai FAILED: ' + d.$q('#aiStatus').textContent;
   await d.spot('#aiOut', 'AI 推薦 3–6 門課，每門附理由，而且彼此不衝堂', 3200);
-  await d.click('#aiAll'); await d.say('按「全部加入」，課直接排進課表', 2600);
+  await d.click('#aiAll'); d.sfx('ding'); await d.say('按「全部加入」，課直接排進課表', 2600);
   await d.click('#aiClose'); await d.to('#tt'); await d.say('回到課表：新課已排進去', 2200);
   await d.top(); await d.click('#palBtn');
   await d.click('text:#langSeg button|English'); await d.say('切換英文：整個介面變英文，交換生也能用', 2600);
@@ -117,7 +118,7 @@ SEG_APPLY = """async () => { const d = demo;
   await d.to('#applicationKind'); await d.say('三種申請：加簽、跨系選修、豁免先修', 2600);
   const k = d.$q('#applicationKind'); k.value = 'add'; k.dispatchEvent(new Event('change', { bubbles: true }));
   await d.type('#applicationReason', '想提早修虛擬化技術，準備雲端相關的專題', 90);
-  await d.click('#applicationSubmit'); await d.sleep(1200);
+  await d.click('#applicationSubmit'); d.sfx('ding'); await d.sleep(1200);
   await d.spot('#applicationHistory', '送出後狀態顯示「審核中」', 2600);
   await d.top(); await d.say('切換到老師端：登出 → 用老師帳號登入', 2000);
   await d.press('#logoutBtn');
@@ -136,7 +137,7 @@ SEG_TEACHER = """async () => { const d = demo;
   const csv = d.$q('text:a,button|匯出全部名單'); if (csv) { await d.to(csv); await d.say('可匯出 CSV，Excel 直接開', 2400); }
   await d.top();
   await d.type('textarea[id^="review-note-"]', '同意加簽，請注意先修內容', 90);
-  await d.click('[data-decision="approve"]'); await d.sleep(1500);
+  await d.click('[data-decision="approve"]'); d.sfx('ding'); await d.sleep(1500);
   await d.spot('[data-request-id]', '按「通過並加入課表」→ 學生的課表直接出現這門課', 3000);
   await d.top(); await d.say('切回學生帳號看結果', 1600);
   await d.press('#logout');
@@ -200,6 +201,26 @@ def stop_server(proc):
             proc.terminate()
 
 
+def start_music(browser, url, volume):
+    """另開一個小視窗播 YouTube 背景音樂，調好音量後縮到最小；回傳 context，關掉它音樂就停。"""
+    ctx = browser.new_context(locale="zh-TW", viewport={"width": 640, "height": 360})
+    page = ctx.new_page()
+    try:
+        page.goto(url)
+        page.wait_for_function("() => { const v = document.querySelector('video'); return v && v.currentTime > 0; }", timeout=30000)
+        page.evaluate("""v => { const p = document.querySelector('#movie_player'); if (p && p.setVolume) { p.unMute(); p.setVolume(v); }
+                                const el = document.querySelector('video'); el.muted = false; el.volume = v / 100; }""", volume)
+        cdp = ctx.new_cdp_session(page)
+        win = cdp.send("Browser.getWindowForTarget")["windowId"]
+        cdp.send("Browser.setWindowBounds", {"windowId": win, "bounds": {"windowState": "minimized"}})
+        print(f"背景音樂：{page.title()}（音量 {volume}）")
+    except Exception as e:
+        print(f"背景音樂播放失敗，略過：{e}")
+        ctx.close()
+        return None
+    return ctx
+
+
 def screen_size():
     """主螢幕的實際解析度（例如 2560×1440），不受 Windows 顯示縮放影響。"""
     if os.name == "nt":
@@ -218,6 +239,8 @@ def main():
     ap.add_argument("--speed", type=float, default=1, help="播放速度倍數，例如 3 = 三倍速")
     ap.add_argument("--port", type=int, default=8030)
     ap.add_argument("--record", action="store_true", help="另存影片到 tools/demo/out/")
+    ap.add_argument("--music", default=MUSIC, help="背景音樂的 YouTube 網址；--music none 不播")
+    ap.add_argument("--music-volume", type=int, default=25, help="背景音樂音量 0～100（預設 25）")
     ap.add_argument("--size", help="改用視窗模式並指定大小，例如 1440x810；不指定就是全螢幕")
     args = ap.parse_args()
     base = f"http://127.0.0.1:{args.port}"
@@ -240,6 +263,7 @@ def main():
             # 允許自動播放，點擊音效才放得出來（Playwright 錄影本身不含聲音，要聲音請用 OBS 錄）
             browser = p.chromium.launch(headless=False, args=launch_args + ["--autoplay-policy=no-user-gesture-required"],
                                         ignore_default_args=["--mute-audio"])  # Playwright 預設靜音
+            music = start_music(browser, args.music, args.music_volume) if args.music.lower() != "none" else None
             opts = {**view, "locale": "zh-TW"}
             out = HERE / "out"
             if args.record:
@@ -249,6 +273,7 @@ def main():
             ctx.add_init_script(f"window.DEMO_SPEED={args.speed};\n{LIB}")
             page = ctx.new_page()
             page.set_default_timeout(60000)
+            page.bring_to_front()  # 音樂視窗在背景，Demo 視窗放最前面
             if not args.size:
                 cdp = ctx.new_cdp_session(page)
                 win = cdp.send("Browser.getWindowForTarget")["windowId"]
@@ -287,6 +312,9 @@ def main():
             run(SEG_MOBILE)
 
             video = page.video
+            if music:
+                music.close()  # Demo 結束，音樂跟著停
+                music = None
             ctx.close()
             browser.close()
             if video:

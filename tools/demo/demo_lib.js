@@ -109,20 +109,45 @@
     setTimeout(() => d.remove(), 600);
   }
 
-  // 點擊音效：用 Web Audio 現場合成一聲短促的「喀」，不需要音效檔
+  // 音效：全部用 Web Audio 現場合成，不需要音效檔
+  // tick＝點擊、key＝打字、whoosh／whooshOut＝特寫放大／縮回、ding＝成功、buzz＝被擋下
   let audio = null;
-  function tick() {
-    try {
-      audio = audio || new AudioContext();
-      const t = audio.currentTime, len = Math.floor(audio.sampleRate * .03);
-      const buf = audio.createBuffer(1, len, audio.sampleRate), ch = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
-      const src = audio.createBufferSource(); src.buffer = buf;
-      const bp = audio.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.2;
-      const g = audio.createGain(); g.gain.setValueAtTime(.9, t);
-      src.connect(bp).connect(g).connect(audio.destination); src.start(t);
-    } catch (e) {}
+  function ac() { audio = audio || new AudioContext(); return audio; }
+  function noise(sec) {
+    const a = ac(), len = Math.floor(a.sampleRate * sec), buf = a.createBuffer(1, len, a.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) ch[i] = Math.random() * 2 - 1;
+    const src = a.createBufferSource(); src.buffer = buf; return src;
   }
+  function tone(type, f0, f1, at, dur, vol) {
+    const a = ac(), o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, at); if (f1) o.frequency.exponentialRampToValueAtTime(f1, at + dur);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + .01); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g).connect(a.destination); o.start(at); o.stop(at + dur + .02);
+  }
+  function burst(sec, freq, q, vol, curve = 6) {
+    const a = ac(), t = a.currentTime, src = noise(sec), bp = a.createBiquadFilter(), g = a.createGain();
+    bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = q;
+    const len = 64, env = new Float32Array(len); for (let i = 0; i < len; i++) env[i] = vol * Math.pow(1 - i / (len - 1), curve) + 0.0001;
+    g.gain.setValueCurveAtTime(env, t, sec);
+    src.connect(bp).connect(g).connect(a.destination); src.start(t);
+  }
+  function whoosh(up, vol) {
+    const a = ac(), t = a.currentTime, dur = .55 / Math.max(1, SPEED / 2), src = noise(dur), bp = a.createBiquadFilter(), g = a.createGain();
+    bp.type = 'bandpass'; bp.Q.value = .9;
+    bp.frequency.setValueAtTime(up ? 300 : 2400, t); bp.frequency.exponentialRampToValueAtTime(up ? 2600 : 300, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * .55); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(bp).connect(g).connect(a.destination); src.start(t);
+  }
+  const SFX = {
+    tick: () => burst(.03, 2600, 1.2, .9),
+    key: () => burst(.02, 3800 + Math.random() * 800, 2, .25, 8),
+    whoosh: () => whoosh(true, .55),
+    whooshOut: () => whoosh(false, .3),
+    ding: () => { const t = ac().currentTime; tone('sine', 880, 0, t, .35, .25); tone('sine', 1318.5, 0, t + .09, .5, .22); },
+    buzz: () => { const t = ac().currentTime; tone('square', 150, 110, t, .22, .12); tone('square', 150, 110, t + .26, .22, .12); },
+  };
+  function sfx(name) { try { SFX[name](); } catch (e) {} }
+  const tick = () => sfx('tick');
   async function click(el) { const n = await to(el); await sleep(180); ripple(); tick(); await sleep(120); n.click(); await sleep(600); return n; }
   async function press(el) { await to(el); await sleep(180); ripple(); tick(); await sleep(120); } // 只做動畫，真正的點擊交給 Playwright（會換頁的按鈕）
 
@@ -130,7 +155,7 @@
   async function type(sel, text, ms = 85) {
     await click(sel);
     const n = $q(sel); n.focus();
-    for (const ch of text) { n.value += ch; n.dispatchEvent(new Event('input', { bubbles: true })); await sleep(ms); }
+    for (const ch of text) { n.value += ch; n.dispatchEvent(new Event('input', { bubbles: true })); sfx('key'); await sleep(ms); }
     await sleep(400);
     return n;
   }
@@ -157,6 +182,7 @@
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const dur = .6 / SPEED;
     Object.assign(box.style, { transformOrigin: `${cx - b.left}px ${cy - b.top}px`, transition: `transform ${dur}s cubic-bezier(.2,.8,.2,1)`, willChange: 'transform' });
+    sfx('whoosh');
     box.style.transform = `translate(${innerWidth / 2 - cx}px,${innerHeight * .42 - cy}px) scale(${k})`;
     const tx = innerWidth / 2, ty = innerHeight * .42, w = r.width * k + 24, h = r.height * k + 24;
     const ring = document.createElement('div');
@@ -169,7 +195,7 @@
     await sleep(80); ring.style.opacity = '1';
     await sleep(650);
     await say(text, ms);
-    ring.style.opacity = '0'; box.style.transform = '';
+    sfx('whooshOut'); ring.style.opacity = '0'; box.style.transform = '';
     await sleep(650);
     ring.remove(); box.style.willChange = ''; box.style.transition = '';
   }
@@ -197,6 +223,6 @@
   function courseBtn(name, re = /^(登記|加選)$/) { const a = course(name); return a && [...a.querySelectorAll('button')].find(b => re.test(b.textContent.trim())); }
   function block(name) { return [...document.querySelectorAll('#tt .blk')].find(b => b.textContent.includes(name)) || null; }
 
-  window.demo = { spot, capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
+  window.demo = { sfx, spot, capAt, moveTo, to, click, press, type, clear, choose, say, hush, sleep, until, top, credits, course, courseBtn, block, $q };
   if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 })();
