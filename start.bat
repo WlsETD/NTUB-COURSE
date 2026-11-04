@@ -33,8 +33,10 @@ rem ---------------------------------------------------------------
 where uv >nul 2>nul || (echo 找不到 uv，請先安裝：https://docs.astral.sh/uv/ & goto fail)
 cd django_app
 if not exist ".env" (
-  echo 找不到 django_app\.env，請先複製 .env.example 成 .env 並填入設定。
-  goto fail
+  copy /y ".env.example" ".env" >nul || goto fail
+  echo 已從 .env.example 建立 django_app\.env。
+  echo 網站可以開，但要登入請先在 .env 填好 Firebase 設定；要用 AI 建議請填 OPENAI_API_KEY。
+  echo.
 )
 echo [1/2] 安裝套件（uv sync）...
 uv sync || goto fail
