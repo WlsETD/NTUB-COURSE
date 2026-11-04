@@ -3,3 +3,6 @@ node_modules/
 
 # 課程講義（不放進公開 repo）
 *.pdf
+
+# Demo 錄影輸出
+tools/demo/out/
