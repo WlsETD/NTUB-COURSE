@@ -6,6 +6,7 @@
   const sleep = ms => new Promise(r => setTimeout(r, ms / SPEED));
   const ease = t => (t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   let c, cap, x, y;
+  const HOT = [44, 26]; // 游標的點擊點：貓兩眼中間（以 62×38 的圖算）
 
   function mount() {
     document.querySelectorAll('.mem-banner').forEach(b => (b.style.display = 'none'));
@@ -15,8 +16,8 @@
     font.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap';
     document.head.appendChild(font);
     c = document.createElement('div');
-    c.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24"><path d="M4 2l15 11.5-6.6.9 3.9 7.6-2.9 1.4-3.8-7.6L4 20.5z" fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
-    Object.assign(c.style, { position: 'fixed', left: '0', top: '0', zIndex: 2147483647, pointerEvents: 'none', filter: 'drop-shadow(0 2px 3px rgba(0,0,0,.35))' });
+    c.innerHTML = '<svg width="62" height="38" viewBox="0 0 26 16" shape-rendering="crispEdges"><path d="M15 2h1v1h-1zM23 2h1v1h-1zM14 3h2v1h-2zM22 3h2v1h-2zM13 4h2v1h-2zM23 4h1v1h-1zM14 11h3v1h-3zM21 11h3v1h-3z" fill="#fff"/><path d="M15 0h1v1h-1zM23 0h1v1h-1zM14 1h3v1h-3zM22 1h3v1h-3zM13 2h2v1h-2zM16 2h1v1h-1zM21 2h2v1h-2zM24 2h1v1h-1zM12 3h2v1h-2zM16 3h2v1h-2zM20 3h2v1h-2zM24 3h1v1h-1zM11 4h2v1h-2zM15 4h8v1h-8zM24 4h1v1h-1zM9 5h16v1h-16zM8 6h17v1h-17zM7 7h18v1h-18zM7 8h18v1h-18zM7 9h19v1h-19zM1 10h5v1h-5zM7 10h19v1h-19zM0 11h14v1h-14zM17 11h4v1h-4zM24 11h2v1h-2zM0 12h26v1h-26zM0 13h3v1h-3zM6 13h20v1h-20zM9 14h16v1h-16zM11 15h13v1h-13z" fill="#111"/></svg>'; // 像素小黑貓（26×16 格）
+    Object.assign(c.style, { position: 'fixed', left: '0', top: '0', zIndex: 2147483647, pointerEvents: 'none', filter: 'drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 2px 3px rgba(0,0,0,.35))' });
     document.body.appendChild(c);
     cap = document.createElement('div');
     Object.assign(cap.style, {
@@ -33,7 +34,7 @@
     let p = null;
     try { p = JSON.parse(sessionStorage.demoPos || 'null'); } catch (e) {}
     [x, y] = p || [innerWidth * .6, innerHeight * .4];
-    c.style.transform = `translate(${x}px,${y}px)`;
+    c.style.transform = `translate(${x - HOT[0]}px,${y - HOT[1]}px)`;
   }
 
   async function moveTo(tx, ty, ms = 750) {
@@ -41,7 +42,7 @@
     for (;;) {
       const t = Math.min(1, (performance.now() - t0) / dur), e = ease(t);
       x = sx + (tx - sx) * e; y = sy + (ty - sy) * e - Math.sin(Math.PI * t) * 30;
-      c.style.transform = `translate(${x - 4}px,${y - 2}px)`;
+      c.style.transform = `translate(${x - HOT[0]}px,${y - HOT[1]}px)`;
       if (t >= 1) break;
       await new Promise(r => setTimeout(r, 16));
     }

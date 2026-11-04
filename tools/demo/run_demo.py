@@ -180,23 +180,39 @@ def stop_server(proc):
             proc.terminate()
 
 
+def screen_size():
+    """主螢幕大小（CSS 像素，已考慮 Windows 縮放）。"""
+    if os.name == "nt":
+        import ctypes
+        m = ctypes.windll.user32.GetSystemMetrics
+        return m(0), m(1)
+    return 1920, 1080
+
+
 def main():
     ap = argparse.ArgumentParser(description="自動跑一次選課系統 Demo")
     ap.add_argument("--speed", type=float, default=1, help="播放速度倍數，例如 3 = 三倍速")
     ap.add_argument("--port", type=int, default=8030)
     ap.add_argument("--record", action="store_true", help="另存影片到 tools/demo/out/")
-    ap.add_argument("--size", default="1440x810", help="視窗大小，例如 1920x1080")
+    ap.add_argument("--size", help="改用視窗模式並指定大小，例如 1440x810；不指定就是全螢幕")
     args = ap.parse_args()
-    w, h = map(int, args.size.lower().split("x"))
     base = f"http://127.0.0.1:{args.port}"
+    if args.size:
+        w, h = map(int, args.size.lower().split("x"))
+        launch_args = [f"--window-size={w},{h + 90}"]
+        view = {"viewport": {"width": w, "height": h}}
+    else:  # 全螢幕：kiosk 模式不會跳出「按 F11 結束全螢幕」的提示
+        w, h = screen_size()
+        launch_args = ["--kiosk", "--start-fullscreen"]
+        view = {"no_viewport": True}
 
     print(f"啟動 Django（記憶體模式）：{base}")
     server = start_server(args.port)
     t0 = time.time()
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, args=[f"--window-size={w},{h + 90}"])
-            opts = {"viewport": {"width": w, "height": h}, "locale": "zh-TW"}
+            browser = p.chromium.launch(headless=False, args=launch_args)
+            opts = {**view, "locale": "zh-TW"}
             out = HERE / "out"
             if args.record:
                 out.mkdir(exist_ok=True)
