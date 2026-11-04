@@ -30,8 +30,8 @@ TEACHER = "sckuai@ntub.edu.tw"
 # ---------- 每一段的瀏覽器動作（在頁面裡執行，回傳一行紀錄） ----------
 
 SEG_OPEN = """async () => { const d = demo;
-  await d.say('組員 1｜開場：git clone → start.bat → 網站自動開好', 3500);
-  await d.say('組員 2｜登入與找課：只收 @ntub.edu.tw 學校帳號', 2600);
+  await d.say('開場：git clone → start.bat → 網站自動開好', 3500);
+  await d.say('登入與找課：只收 @ntub.edu.tw 學校帳號', 2600);
   await d.to('text:button|使用 Google'); await d.sleep(900);
   await d.say('Demo 用本機測試登入（學生 11446001）', 1800);
   await d.press('[data-dev="%s"]'); return 'open';
@@ -50,7 +50,7 @@ SEG_FIND = """async () => { const d = demo, log = [];
 }"""
 
 SEG_PLAN = """async () => { const d = demo, log = [];
-  await d.say('組員 3｜排課與檢查', 2000);
+  await d.say('排課與檢查', 2000);
   await d.type('#q', '網站應用程式設計'); await d.sleep(500);
   await d.click(d.courseBtn('網站應用程式設計')); await d.say('加選成功，右下角提示目前名額', 2600); log.push('add');
   await d.clear('#q'); await d.type('#q', '程式設計(一)'); await d.sleep(500);
@@ -65,7 +65,7 @@ SEG_PLAN = """async () => { const d = demo, log = [];
 }"""
 
 SEG_CREDIT = """async () => { const d = demo, log = [];
-  await d.top(); await d.say('組員 4｜學分與換課', 2000);
+  await d.top(); await d.say('學分與換課', 2000);
   await d.to('#summary'); await d.say('本學期學分：下限 9、上限 25，即時顯示「可再選幾學分」', 3200);
   const ph = d.$q('text:#summary *|階段一'); if (ph) { await d.to(ph); await d.say('選課階段：登記中可超額，截止後抽籤；加退選時剩餘名額先搶先贏', 3500); }
   const basic = d.$q('#basic summary') || d.$q('#basic');
@@ -80,7 +80,7 @@ SEG_CREDIT = """async () => { const d = demo, log = [];
 }"""
 
 SEG_AI = """async () => { const d = demo;
-  await d.say('組員 5｜AI 選課建議', 2000);
+  await d.say('AI 選課建議', 2000);
   await d.click('#aiFab'); await d.sleep(600);
   await d.to('#aiDept'); await d.say('學系維持「自動判斷」，用平常講話的方式描述', 2600);
   await d.type('#aiText', '我想修財務相關的課，週二和週五不想排課', 100);
@@ -111,7 +111,7 @@ SEG_APPLY = """async () => { const d = demo;
     return col === 3 && r1 <= 5 && (r2 || r1 + 1) > 3;   // 週二、和第 2–4 節重疊
   }).map(b => b.querySelector('b').textContent);
   for (const name of clash) { await d.click(d.block(name)); await d.click('text:#ttDlg button|退選'); }
-  await d.top(); await d.say('組員 6｜特殊申請與老師端', 2200);
+  await d.top(); await d.say('特殊申請與老師端', 2200);
   const panel = d.$q('#applicationPanel'); await d.click(panel.querySelector('summary') || panel);
   await d.choose('#applicationCourse', '虛擬化技術'); await d.say('選一門四年級的課「虛擬化技術」（蒯思齊老師）', 2800);
   await d.to('#applicationKind'); await d.say('三種申請：加簽、跨系選修、豁免先修', 2600);
@@ -148,7 +148,7 @@ SEG_LOGIN_STUDENT = """async () => { const d = demo; await d.press('[data-dev="%
 SEG_END = """async () => { const d = demo;
   await d.sleep(600);
   const b = d.block('虛擬化'); if (b) { await d.to(b); await d.say('課表已出現「虛擬化技術」，標示「申請通過」', 3200); }
-  await d.say('組員 1｜結語：一個畫面選完課；衝堂、學分、換課先幫你檢查；<br>AI 與線上加簽解決「不知道選什麼」和「選不到」', 4500);
+  await d.say('結語：一個畫面選完課；衝堂、學分、換課先幫你檢查；<br>AI 與線上加簽解決「不知道選什麼」和「選不到」', 4500);
   d.hush(); await d.sleep(800);
   return 'end approved=' + !!(b && /申請通過/.test(b.innerText));
 }"""

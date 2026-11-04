@@ -9,6 +9,11 @@
 
   function mount() {
     document.querySelectorAll('.mem-banner').forEach(b => (b.style.display = 'none'));
+    // 字幕字體：Noto Sans TC（登入頁、老師端不一定有載入，這裡補上）
+    const font = document.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap';
+    document.head.appendChild(font);
     c = document.createElement('div');
     c.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24"><path d="M4 2l15 11.5-6.6.9 3.9 7.6-2.9 1.4-3.8-7.6L4 20.5z" fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
     Object.assign(c.style, { position: 'fixed', left: '0', top: '0', zIndex: 2147483647, pointerEvents: 'none', filter: 'drop-shadow(0 2px 3px rgba(0,0,0,.35))' });
@@ -16,8 +21,9 @@
     cap = document.createElement('div');
     Object.assign(cap.style, {
       position: 'fixed', left: '50%', bottom: '36px', transform: 'translateX(-50%)', zIndex: 2147483645, pointerEvents: 'none',
-      background: 'rgba(20,24,32,.9)', color: '#fff', padding: '16px 30px', borderRadius: '20px',
-      font: '700 30px "Noto Sans TC",system-ui,sans-serif', maxWidth: '90vw', textAlign: 'center', lineHeight: '1.45',
+      background: 'rgba(0,0,0,.5)', color: '#fff', padding: '16px 30px', borderRadius: '20px',
+      font: '700 30px "Noto Sans TC",sans-serif', maxWidth: '90vw', textAlign: 'center', lineHeight: '1.45',
+      textShadow: '0 1px 3px rgba(0,0,0,.6)',
       transition: 'opacity .3s', opacity: '0',
     });
     document.body.appendChild(cap);
